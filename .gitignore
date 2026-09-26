@@ -1,0 +1,26 @@
+#fortran compile files
+*.o
+*.mod
+*.smod
+
+#directories
+/mod
+#I use this as the linter output for VS code
+/fmod_linter
+/output*
+
+#intel opt report
+*.optrpt
+
+#compiled programm
+paraCLAWs
+
+#input files
+*.in
+
+#python files
+__pycache__/
+*.pyc
+
+# the build directory
+build/

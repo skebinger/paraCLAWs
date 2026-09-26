@@ -1,0 +1,16 @@
+{
+    "fortran.linter.compiler": "ifx",
+    "fortran.linter.compilerPath": "/opt/intel/oneapi/compiler/latest/bin/ifx",
+    "fortran.linter.modOutput": "${workspaceFolder}/fmod_linter",
+    "fortran.linter.includePaths": [
+        "${workspaceFolder}/**/*",
+        "/opt/intel/oneapi/**/*",
+        "${env:HOME}/lib/VTKFortran/**/*",
+        "${env:HOME}/lib/mpidcl_intel/include",
+        "${env:HOME}/lib/mpidcl_gnu/include"
+    ],
+    "fortran.linter.extraArgs": ["-Wno-missing-include-dirs"],
+    "fortran.formatting.findentArgs": [
+        "-i4"
+    ]
+}
