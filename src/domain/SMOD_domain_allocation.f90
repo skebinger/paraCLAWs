@@ -18,15 +18,14 @@ contains
         class(mesh_fields_computational_space), intent(inout) :: this
         type(decomp_info), intent(in) :: decomposition
 
-        integer :: xi_start, xi_end
-        integer :: eta_start, eta_end
+        integer :: ilow, ihigh, jlow, jhigh
 
-        call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
-        allocate(this%xi (xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
-        allocate(this%eta(xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
-        allocate(this%xi_corner (5,xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
-        allocate(this%eta_corner(5,xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
+        allocate(this%xi (ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
+        allocate(this%eta(ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
+        allocate(this%xi_corner (5,ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
+        allocate(this%eta_corner(5,ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
 
         ! Initialize
         this%xi(:,:) = 0
@@ -41,15 +40,14 @@ contains
         class(mesh_fields_physical_space), intent(inout) :: this
         type(decomp_info), intent(in) :: decomposition
 
-        integer :: xi_start, xi_end
-        integer :: eta_start, eta_end
+        integer :: ilow, ihigh, jlow, jhigh
 
-        call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
-        allocate(this%x (xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
-        allocate(this%y(xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
-        allocate(this%x_corner (5,xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
-        allocate(this%y_corner(5,xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
+        allocate(this%x(ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
+        allocate(this%y(ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
+        allocate(this%x_corner(5,ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
+        allocate(this%y_corner(5,ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
 
         ! Initialize
         this%x(:,:) = 0
@@ -64,16 +62,15 @@ contains
         class(mesh_fields_quadrilateral_mapping), intent(inout) :: this
         type(decomp_info), intent(in) :: decomposition
 
-        integer :: xi_start, xi_end
-        integer :: eta_start, eta_end
+        integer :: ilow, ihigh, jlow, jhigh
 
-        call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
-        allocate(this%capacity          (   xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
-        allocate(this%normal_vector_xi  (2, 2, xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
-        allocate(this%normal_vector_eta (2, 2, xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
-        allocate(this%length_ratio_xi   (2, xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
-        allocate(this%length_ratio_eta  (2, xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
+        allocate(this%capacity          (      ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
+        allocate(this%normal_vector_xi  (2, 2, ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
+        allocate(this%normal_vector_eta (2, 2, ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
+        allocate(this%length_ratio_xi   (2, ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
+        allocate(this%length_ratio_eta  (2, ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
 
         ! Initialize
         this%capacity(:,:) = 0
@@ -90,13 +87,12 @@ contains
         class(solution_fields), intent(inout) :: this
         type(decomp_info), intent(in) :: decomposition
 
-        integer :: xi_start, xi_end
-        integer :: eta_start, eta_end
+        integer :: ilow, ihigh, jlow, jhigh
 
-        call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
-        allocate(this%vars  (num_equations  ,xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
-        allocate(this%aux   (num_aux        ,xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
+        allocate(this%vars  (num_equations  ,ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
+        allocate(this%aux   (num_aux        ,ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
 
         ! Initialize
         this%vars   = 0

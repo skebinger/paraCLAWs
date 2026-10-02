@@ -122,7 +122,7 @@ contains
         double precision, intent(in) :: time
 
         integer :: rank,ierr
-        integer :: xi_start,xi_end,eta_start,eta_end
+        integer :: ilow,ihigh,jlow,jhigh
         integer :: nx,ny,npts
         integer :: i,j,k,m
 
@@ -141,12 +141,12 @@ contains
         ! ----------------------------------------------------------------------
         ! Get MPI rank and local mesh bounds
         call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
-        call info%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call info%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
         write(rank_str,'(I0)') rank
 
-        nx = xi_end - xi_start + 1
-        ny = eta_end - eta_start + 1
+        nx = ihigh - ilow + 1
+        ny = jhigh - jlow + 1
         npts = nx * ny
 
         allocate(xpts(npts), ypts(npts), zpts(npts))
@@ -154,8 +154,8 @@ contains
         ! ----------------------------------------------------------------------
         ! Flatten mesh coordinates (2D: z = 0)
         k = 0
-        do j = eta_start, eta_end
-            do i = xi_start, xi_end
+        do j = jlow, jhigh
+            do i = ilow, ihigh
                 k = k + 1
                 xpts(k) = mesh%x(i,j)
                 ypts(k) = mesh%y(i,j)
@@ -177,11 +177,11 @@ contains
         ! Initialize VTK file
         error = vtkobj%initialize(format='binary', filename=filename, &
             mesh_topology='StructuredGrid', &
-            nx1=xi_start, nx2=xi_end, ny1=eta_start, ny2=eta_end, nz1=1, nz2=1)
+            nx1=ilow, nx2=ihigh, ny1=jlow, ny2=jhigh, nz1=1, nz2=1)
         if (error /= 0) stop "VTK initialize failed"
 
         ! Write geometry
-        error = vtkobj%xml_writer%write_piece(nx1=xi_start, nx2=xi_end, ny1=eta_start, ny2=eta_end, nz1=1, nz2=1)
+        error = vtkobj%xml_writer%write_piece(nx1=ilow, nx2=ihigh, ny1=jlow, ny2=jhigh, nz1=1, nz2=1)
         error = vtkobj%xml_writer%write_geo(n=npts, x=xpts, y=ypts, z=zpts)
 
         ! ----------------------------------------------------------------------
@@ -192,8 +192,8 @@ contains
         do m = 1, num_equations
             allocate(qfield(npts))
             k = 0
-            do j = eta_start, eta_end
-                do i = xi_start, xi_end
+            do j = jlow, jhigh
+                do i = ilow, ihigh
                     k = k + 1
                     qfield(k) = solution%q(m,i,j)
                 end do
@@ -238,12 +238,12 @@ contains
 
         integer :: rank,size,ierr
 
-        integer :: xi_start,xi_end, eta_start, eta_end
+        integer :: ilow,ihigh, jlow,jhigh
 
         call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
         call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
 
-        call info%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call info%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
         write(rank_str, '(I0)') rank
 
@@ -271,8 +271,8 @@ contains
         !write solution
         open(unit=1,file=adjustl(trim(subdirname))//adjustl(trim(filename_q)),status='unknown',form='formatted') !rewrite the file if exists
 
-        do j=eta_start-num_ghost,eta_end+num_ghost
-            do i=xi_start-num_ghost,xi_end+num_ghost
+        do j=jlow-num_ghost,jhigh+num_ghost
+            do i=ilow-num_ghost,ihigh+num_ghost
                 do m=1,num_equations
                     !call padding_q(m,i,j)
                 end do
@@ -286,8 +286,8 @@ contains
         !write aux
         open(unit=2,file=adjustl(trim(subdirname))//adjustl(trim(filename_a)),status='unknown',form='formatted') !rewrite the file if exists
 
-        do j=eta_start-num_ghost,eta_end+num_ghost
-            do i=xi_start-num_ghost,xi_end+num_ghost
+        do j=jlow-num_ghost,jhigh+num_ghost
+            do i=ilow-num_ghost,ihigh+num_ghost
                 do m=1,num_aux
                     !call padding_aux(m,i,j)
                 end do
@@ -310,7 +310,7 @@ contains
         type(mesh_fields), intent(in) :: mesh
 
         integer :: rank,ierr
-        integer :: xi_start,xi_end,eta_start,eta_end
+        integer :: ilow,ihigh,jlow,jhigh
         character(len=40) :: rank_str
         integer :: i,j
         double precision :: x_local, y_local
@@ -318,15 +318,15 @@ contains
 
         call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
 
-        call info%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call info%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
         write(rank_str, '(I0)') rank
         ! Write each rank's mesh to disk
         open(unit=1,file=adjustl('output/mesh_rank_' // trim(rank_str)//'.dat'),status='unknown',form='formatted')
 1001    format(50e26.16)
 
-        do j=eta_start-num_ghost,eta_end+num_ghost
-            do i=xi_start-num_ghost,xi_end+num_ghost
+        do j=jlow-num_ghost,jhigh+num_ghost
+            do i=ilow-num_ghost,ihigh+num_ghost
                 x_local = mesh%physical_space%x(i,j)
                 y_local = mesh%physical_space%y(i,j)
                 xi_local = mesh%computational_space%xi(i,j)

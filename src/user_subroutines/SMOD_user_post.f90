@@ -23,7 +23,6 @@ contains
         type(solution_fields), intent(inout) :: solution
         type(decomp_info), intent(in) :: decomposition
 
-        print *, "NOTHING DONE IN user_post: User must define any post processing operations to be performed at each cell (i,j)."
     end subroutine
 
 

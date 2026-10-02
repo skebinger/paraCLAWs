@@ -24,16 +24,16 @@ contains
         type(solution_fields), intent(inout) :: solution
 
         integer :: i,j
-        integer :: xi_start, xi_end, eta_start, eta_end
+        integer :: ilow, ihigh, jlow, jhigh
         integer :: rank,ierr
 
         call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierr)
 
-        call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
         !$OMP PARALLEL DO PRIVATE(i)
-        do j=eta_start-num_ghost,eta_end+num_ghost
-            do i=xi_start-num_ghost,xi_end+num_ghost
+        do j=jlow-num_ghost,jhigh+num_ghost
+            do i=ilow-num_ghost,ihigh+num_ghost
                 solution%vars(:,i,j) = 0.0d0
                 !error stop "set_initial_conditions: User must define initial conditions for the solution fields."
             end do

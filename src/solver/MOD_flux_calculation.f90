@@ -96,15 +96,15 @@ contains
 
         integer :: i,j
         integer :: me,mw
-        integer :: xi_start, xi_end, eta_start, eta_end
+        integer :: ilow, ihigh, jlow, jhigh
 
         double precision :: s,w,mask
 
-        call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
         !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(mask,s,w,i,mw,me)
-        do j=eta_start-1,eta_end+1
-            do i=xi_start-1,xi_end+1
+        do j=jlow-1,jhigh+1
+            do i=ilow-1,ihigh+1
                 do mw=1,num_waves
                     s=lambda(mw,i,j)
                     do me=1,num_equations

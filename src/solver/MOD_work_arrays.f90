@@ -52,21 +52,21 @@ contains
         class(work_arrays), intent(out) :: work
         type(decomp_info), intent(in) :: info
 
-        integer :: xi_start, xi_end, eta_start, eta_end
+        integer :: ilow, ihigh, jlow, jhigh
 
         ! get MPI block bounds
-        call info%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call info%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
         ! first order integration loop variables
-        allocate(work%lambda(num_waves,xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
-        allocate(work%waves(num_equations,num_waves,xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
-        allocate(work%Aminus_dQ(num_equations,xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
-        allocate(work%Aplus_dQ(num_equations,xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
+        allocate(work%lambda    (num_waves,ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
+        allocate(work%waves     (num_equations,num_waves,ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
+        allocate(work%Aminus_dQ (num_equations,ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
+        allocate(work%Aplus_dQ  (num_equations,ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
 
         ! higher order correction
-        allocate(work%f(num_equations,xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
-        allocate(work%wnorm2l(num_waves,xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
-        allocate(work%wnorm2r(num_waves,xi_start-num_ghost:xi_end+num_ghost,eta_start-num_ghost:eta_end+num_ghost))
+        allocate(work%f(num_equations,ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
+        allocate(work%wnorm2l(num_waves,ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
+        allocate(work%wnorm2r(num_waves,ilow-num_ghost:ihigh+num_ghost,jlow-num_ghost:jhigh+num_ghost))
     end subroutine
 
     subroutine deallocate_work_arrays(work)
@@ -82,13 +82,13 @@ contains
         class(work_arrays), intent(inout) :: work
 
         integer :: i,j,me,mw
-        integer :: xi_start, xi_end, eta_start, eta_end
+        integer :: ilow, ihigh, jlow, jhigh
 
-        call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
         !$OMP PARALLEL DO PRIVATE(i,mw,me) COLLAPSE(2)
-        do j=eta_start-num_ghost,eta_end+num_ghost
-            do i=xi_start-num_ghost,xi_end+num_ghost
+        do j=jlow-num_ghost,jhigh+num_ghost
+            do i=ilow-num_ghost,ihigh+num_ghost
                 do mw=1,num_waves
 
                     work%wnorm2l(mw,i,j)=0.d0

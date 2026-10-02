@@ -49,7 +49,7 @@ contains
         integer, intent(inout) :: ierr !! an error code for signalling to the calling subroutine
 
         integer :: ixy ! current sweep direction
-        integer :: xi_start, xi_end, eta_start, eta_end
+        integer :: ilow, ihigh, jlow, jhigh
         integer :: i,j,mw
         integer :: local_validity, global_validity
         logical :: step_valid
@@ -64,15 +64,15 @@ contains
         ierr = -1
 
         ! get MPI block bounds
-        call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
         !===================================================================
         ! xi-sweep
         ixy=1
         !$OMP PARALLEL
         !$OMP DO PRIVATE(i,mw) REDUCTION(MAX:CFL_local)
-        do j=eta_start,eta_end !slice direction
-            do i=xi_start-1,xi_end+1 !integration direction
+        do j=jlow,jhigh !slice direction
+            do i=ilow-1,ihigh+1 !integration direction
                 ! Calculate eigenvalues and waves
                 call wave_decomposition(ixy,i,j,mesh,solution,work,decomposition)
 
@@ -125,8 +125,8 @@ contains
         ! possible to switch i and j indizes?
         !$OMP PARALLEL
         !$OMP DO PRIVATE(j,mw) REDUCTION(MAX:CFL_local)
-        do i=xi_start,xi_end
-            do j=eta_start-1,eta_end+1
+        do i=ilow,ihigh
+            do j=jlow-1,jhigh+1
                 ! Calculate eigenvalues and waves
                 call wave_decomposition(ixy,i,j,mesh,solution,work,decomposition)
                 ! update max CFL
@@ -193,11 +193,11 @@ contains
 
         integer :: me
         integer :: i,j
-        integer :: xi_start, xi_end, eta_start, eta_end
+        integer :: ilow, ihigh, jlow, jhigh
         double precision :: delta, dt_over_delta
         double precision :: len_rat_l,len_rat_r
 
-        call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
         delta = merge(mesh%computational_space%d_xi, mesh%computational_space%d_eta, ixy==1)
 
@@ -206,8 +206,8 @@ contains
         ! cell centred update
         if(ixy==1)then
             !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(i,me)
-            do j=eta_start,eta_end
-                do i=xi_start,xi_end
+            do j=jlow,jhigh
+                do i=ilow,ihigh
                     ! determine the rescaling of the fluxes due to grid mapping
                     len_rat_l = mesh%quadrilateral_mapping%length_ratio_xi(1,i,j)
                     len_rat_r = mesh%quadrilateral_mapping%length_ratio_xi(1,i+1,j)
@@ -221,8 +221,8 @@ contains
             !$OMP END PARALLEL DO
         else
             !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(i,me)
-            do j=eta_start,eta_end
-                do i=xi_start,xi_end
+            do j=jlow,jhigh
+                do i=ilow,ihigh
                     ! determine the rescaling of the fluxes due to grid mapping
                     len_rat_l = mesh%quadrilateral_mapping%length_ratio_eta(1,i,j)
                     len_rat_r = mesh%quadrilateral_mapping%length_ratio_eta(1,i,j+1)
@@ -255,10 +255,10 @@ contains
 
         integer :: me
         integer :: i,j
-        integer :: xi_start, xi_end, eta_start, eta_end
+        integer :: ilow, ihigh, jlow, jhigh
         double precision :: delta, dt_over_delta
 
-        call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
         delta = merge(mesh%computational_space%d_xi, mesh%computational_space%d_eta, ixy==1)
 
@@ -267,8 +267,8 @@ contains
         ! cell centred update
         if(ixy==1)then
             !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(i,me)
-            do j=eta_start,eta_end
-                do i=xi_start,xi_end
+            do j=jlow,jhigh
+                do i=ilow,ihigh
                     do me=1,num_equations
                         solution%vars(me,i,j) = solution%vars(me,i,j) - &
                             dt_over_delta/mesh%quadrilateral_mapping%capacity(i,j) * &
@@ -279,8 +279,8 @@ contains
             !$OMP END PARALLEL DO
         else
             !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(i,me)
-            do j=eta_start,eta_end
-                do i=xi_start,xi_end
+            do j=jlow,jhigh
+                do i=ilow,ihigh
                     do me=1,num_equations
                         solution%vars(me,i,j) = solution%vars(me,i,j) - &
                             dt_over_delta/mesh%quadrilateral_mapping%capacity(i,j) * &
@@ -308,17 +308,17 @@ contains
         type(solution_fields), intent(inout) :: solution
 
         integer :: me
-        integer :: xi_start, xi_end, eta_start, eta_end
+        integer :: ilow, ihigh, jlow, jhigh
         integer :: i,j
         double precision :: phi(num_equations)
 
         if(integrate_source)then
 
-            call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+            call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
             !$OMP PARALLEL DO PRIVATE(i,me,phi)
-            do j=eta_start,eta_end
-                do i=xi_start,xi_end
+            do j=jlow,jhigh
+                do i=ilow,ihigh
 
                     phi = source_function(i,j,mesh,solution,decomposition)
 
@@ -347,14 +347,14 @@ contains
         type(mesh_fields), intent(in) :: mesh
         type(solution_fields), intent(inout) :: solution
 
-        integer :: xi_start, xi_end, eta_start, eta_end
+        integer :: ilow, ihigh, jlow, jhigh
         integer :: i,j
 
-        call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
         !$OMP PARALLEL DO PRIVATE(i)
-        do j=eta_start,eta_end
-            do i=xi_start,xi_end
+        do j=jlow,jhigh
+            do i=ilow,ihigh
                 call user_post(i,j,mesh,solution,decomposition)
             end do
         end do

@@ -24,28 +24,11 @@ contains
         class(mesh_fields), intent(inout) :: mesh
         type(decomp_info), intent(in) :: decomposition
 
-        integer :: xi_start,xi_end,eta_start,eta_end
+        integer :: ilow, ihigh, jlow, jhigh
         integer :: i,j
 
-        call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
-
-        ! nothing done here yet, but this is where you would rescale the computational coordinates if you wanted to do so.
-
-        !mesh%computational_space%d_xi = mesh%computational_space%d_xi
-        !mesh%computational_space%d_eta = mesh%computational_space%d_eta
-!
-        !!$OMP PARALLEL DO PRIVATE(i) COLLAPSE(2)
-        !do j=eta_start-num_ghost,eta_end+num_ghost
-        !    do i=xi_start-num_ghost,xi_end+num_ghost
-        !        mesh%computational_space%xi(i,j) = mesh%computational_space%xi(i,j)
-        !        mesh%computational_space%eta(i,j) = mesh%computational_space%eta(i,j)
-!
-        !        mesh%computational_space%xi_corner(:,i,j) = mesh%computational_space%xi_corner(:,i,j)
-        !        mesh%computational_space%eta_corner(:,i,j) = mesh%computational_space%eta_corner(:,i,j)
-        !    end do
-        !end do
-        !!$OMP END PARALLEL DO
     end subroutine
 
     module subroutine map_to_physical_coordinates(xp,yp,xi,eta)

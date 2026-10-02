@@ -35,7 +35,7 @@ contains
 
         !local variables:
         integer :: i,j,mw,me
-        integer :: xi_start,xi_end,eta_start,eta_end
+        integer :: ilow,ihigh,jlow,jhigh
         integer :: i_right,j_right
         double precision :: wnorm2 !! 2-norm of wave
         double precision :: wnorm2_upstream
@@ -43,17 +43,17 @@ contains
         double precision :: r !! ratio of successive gradients
         double precision :: limiter_function !! value of the flux-limiter function
 
-        call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
         !execute the limiter
         if(use_limiters.eqv..True.) then !skip limiter unless it is activated -> wave1d then remains unaltered
 
-            ! precompute the right side norm at the boundary -> percompute wnorm2r(mw,xi_start-1,j) or wnorm2r(mw,i,eta_start-1)
-            ! this value is chosen as the left norm beginning at i=xi_start or j=eta_start; removes need to calculate two norms per iteration
+            ! precompute the right side norm at the boundary -> percompute wnorm2r(mw,ilow-1,j) or wnorm2r(mw,i,jlow-1)
+            ! this value is chosen as the left norm beginning at i=ilow or j=jlow; removes need to calculate two norms per iteration
             ! helps unifying the loop for calculating the waves later on, since it needs the boundary cell for choosing the upwind cell!
             if(ixy==1)then
-                i=xi_start-1
-                do j=eta_start,eta_end
+                i=ilow-1
+                do j=jlow,jhigh
                     do mw=1,num_waves
                         do me=1,num_equations
                             work%wnorm2r(mw,i,j)=work%wnorm2r(mw,i,j) + work%waves(me,mw,i,j)*work%waves(me,mw,i+1,j)
@@ -61,8 +61,8 @@ contains
                     end do
                 end do
             else
-                j=eta_start-1
-                do i=xi_start,xi_end
+                j=jlow-1
+                do i=ilow,ihigh
                     do mw=1,num_waves
                         do me=1,num_equations
                             work%wnorm2r(mw,i,j)=work%wnorm2r(mw,i,j) + work%waves(me,mw,i,j)*work%waves(me,mw,i,j+1)
@@ -71,8 +71,8 @@ contains
                 end do
             end if
 
-            do j=eta_start,eta_end
-                do i=xi_start,xi_end
+            do j=jlow,jhigh
+                do i=ilow,ihigh
                     wnorm2=0.d0
                     !loop over waves
                     do mw=1,num_waves
@@ -144,10 +144,10 @@ contains
 
         integer :: mw,me
         integer :: i,j
-        integer :: xi_start, xi_end, eta_start, eta_end
+        integer :: ilow, ihigh, jlow, jhigh
         double precision :: delta, dt_over_delta
 
-        call info%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call info%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
         delta = merge(mesh%computational_space%d_xi, mesh%computational_space%d_eta, ixy==1)
 
@@ -155,8 +155,8 @@ contains
 
         if(ixy==1)then
             !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(i,me,mw)
-            do j=eta_start,eta_end
-                do i=xi_start-1,xi_end+1
+            do j=jlow,jhigh
+                do i=ilow-1,ihigh+1
                     do mw=1,num_waves
                         do me=1,num_equations
                             work%f(me,i,j)=work%f(me,i,j) + 0.5d0*abs(work%lambda(mw,i,j)) * &
@@ -170,8 +170,8 @@ contains
             !$OMP END PARALLEL DO
         else
             !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(i,me,mw)
-            do j=eta_start-1,eta_end+1
-                do i=xi_start,xi_end
+            do j=jlow-1,jhigh+1
+                do i=ilow,ihigh
                     do mw=1,num_waves
                         do me=1,num_equations
                             work%f(me,i,j)=work%f(me,i,j) + 0.5d0*abs(work%lambda(mw,i,j)) * &

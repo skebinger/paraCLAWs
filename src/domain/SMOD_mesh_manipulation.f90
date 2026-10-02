@@ -20,17 +20,17 @@ contains
         integer, intent(in) :: m_xi,m_eta
         double precision, intent(in) :: xi_dimensions(2), eta_dimensions(2)
 
-        integer :: xi_start,xi_end,eta_start,eta_end
+        integer :: ilow,ihigh,jlow,jhigh
         integer :: i,j
 
-        call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
         c_mesh%d_xi = (xi_dimensions(2)-xi_dimensions(1))/m_xi
         c_mesh%d_eta = (eta_dimensions(2)-eta_dimensions(1))/m_eta
 
         !$OMP PARALLEL DO PRIVATE(i) COLLAPSE(2)
-        do j=eta_start-num_ghost,eta_end+num_ghost
-            do i=xi_start-num_ghost,xi_end+num_ghost
+        do j=jlow-num_ghost,jhigh+num_ghost
+            do i=ilow-num_ghost,ihigh+num_ghost
                 ! Attention: the corners are sorted in counter-clow-wise orientation.
                 ! Only then the area of the quadrilateral cell is >0!
                 c_mesh%xi_corner(1,i,j) = xi_dimensions(1) + (i-1)*c_mesh%d_xi
@@ -124,15 +124,15 @@ contains
         class(mesh_fields), intent(inout) :: mesh
         type(decomp_info), intent(in) :: decomposition
 
-        integer :: xi_start, eta_start, xi_end, eta_end
+        integer :: ilow, ihigh, jlow, jhigh
         integer :: i,j,m
         double precision :: face_dx,face_dy,vec_norm,area_polygon
 
-        call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
         !$OMP PARALLEL DO PRIVATE(m,i,face_dx,face_dy,vec_norm,area_polygon)
-        do j=eta_start-num_ghost,eta_end+num_ghost
-            do i=xi_start-num_ghost,xi_end+num_ghost
+        do j=jlow-num_ghost,jhigh+num_ghost
+            do i=ilow-num_ghost,ihigh+num_ghost
                 call map_to_physical_coordinates(mesh%physical_space%x(i,j),mesh%physical_space%y(i,j),mesh%computational_space%xi(i,j),mesh%computational_space%eta(i,j))
 
                 do m=1,5
