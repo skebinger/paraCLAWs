@@ -54,19 +54,35 @@ program paraCLAWs
     call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierr)
     call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
 
-    !define output formats
+    !===========================================================
+    ! Console printout definition
+    !===========================================================
 1   format('paraCLAWs - time: ',f10.8,' current dt: ',f10.8,' CFL(max)=',f10.5,' next dt: ',f10.8,' => snapshot: ', i4)
 2   format('paraCLAWs - time: ',f10.8,' current dt: ',f10.8,' CFL(max)=',f10.5,' next dt: ',f10.8)
 
-    if (rank==0)then
+    !===========================================================
+    ! Print the program banner
+    !===========================================================
+    if(rank==0)then
         write(*,*) "========================================================="
         call execute_command_line('figlet "paraCLAWs"',.TRUE.,exitstat,cmdstat)
-        write(*,*) "parallelised hyperbolic Conservation LaW solver"
+        write(*,*) "parallel hyperbolic Conservation LaW solver"
         write(*,*) "========================================================="
+    end if
 
+    !===========================================================
+    ! Initialize the output directory
+    !===========================================================
+    if (rank==0)then
+        ! restore an empty output directory
         call execute_command_line('rm -r output',.TRUE.,exitstat,cmdstat)
         call execute_command_line('mkdir -p output',.TRUE.,exitstat,cmdstat)
+    end if
 
+    !===========================================================
+    ! Print the number of processes and threads per rank
+    !===========================================================
+    if(rank==0)then
         print *, "Number of processes started: ", size
 #ifdef _OPENMP
         !$OMP PARALLEL
@@ -77,10 +93,18 @@ program paraCLAWs
         write(*,*) "========================================================="
 #endif
     end if
-    ! Just a small check to see if all ranks started properly
+    ! Report the rank number and that the rank is ready to start the simulation (useful for debugging)
     call MPI_Barrier(MPI_COMM_WORLD)
     write(*,*) "RANK, ", rank, " is ready"
+    ! wait for all ranks
+    ! Idea for future: maybe add a timeout here, so that if a rank is not ready (hang-up, etc.) 
+    ! after a certain time, the program can exit with an error message
     call MPI_Barrier(MPI_COMM_WORLD)
+    if(rank==0)then
+        write(*,*) "========================================================="
+        print *, "All ranks are ready to start the simulation."
+        write(*,*) "========================================================="
+    end if
 
     !===========================================================
     ! Load solver setup
