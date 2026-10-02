@@ -12,8 +12,9 @@
 # ======================================================
 
 # Path to the distributed solver sources and to the user's working tree.
-# Set BASE_DIR to the directory containing src/ and mk/.
+# Set BASE_DIR to the directory containing src/ and mk/. (propably the location where you cloned the paraCLAWs repository)
 BASE_DIR := $(CURDIR)
+# Set USER_DIR to the directory containing the user's working tree. (might be the same as BASE_DIR or a different location where you want to build the code)
 USER_DIR := $(CURDIR)
 
 ################################################################
@@ -50,9 +51,12 @@ else ifeq ($(strip $(FC)),mpiifx)
 LAPACK_LIB = -qmkl
 endif
 
+# Path to the required libraries.
+# mpidcl
 MPI_DCL_LIB_gf = -L$(HOME)/lib/mpidcl_gnu/lib64 -lmpidcl
 MPI_DCL_LIB_intel = -L$(HOME)/lib/mpidcl_intel/lib64 -lmpidcl
 
+# vtkFortran
 ifeq ($(use_vtk),1)
 VTKFortran_gf = -L$(HOME)/lib/VTKFortran_gnu/lib -lVTKFortran -lz
 VTKFortran_intel = -L$(HOME)/lib/VTKFortran_intel/lib -lVTKFortran -lz
@@ -61,9 +65,12 @@ VTKFortran_gf =
 VTKFortran_intel =
 endif
 
+# Path to the required module files.
+# mpidcl
 MPI_DCL_MOD_gf = -I$(HOME)/lib/mpidcl_gnu/include
 MPI_DCL_MOD_intel = -I$(HOME)/lib/mpidcl_intel/include
 
+# vtkFortran
 ifeq ($(use_vtk),1)
 VTKFortran_MOD_gf = -I$(HOME)/lib/VTKFortran_gnu/include
 VTKFortran_MOD_intel = -I$(HOME)/lib/VTKFortran_intel/include
