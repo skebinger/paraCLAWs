@@ -79,8 +79,10 @@ def generate(user_dir: Path, base_dir: Path, base_sources: list[Path]) -> str:
         if (
             resolved == build_dir
             or build_dir in resolved.parents
-            or resolved == base_dir
-            or base_dir in resolved.parents
+            or (
+                (user_dir == base_dir or user_dir in base_dir.parents)
+                and base_dir in resolved.parents
+            )
         ):
             continue
         user_sources.add(resolved)

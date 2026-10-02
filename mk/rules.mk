@@ -14,6 +14,7 @@
 .DEFAULT_GOAL := help
 
 override BASE_DIR := $(abspath $(patsubst ~/%,$(HOME)/%,$(BASE_DIR)))
+override USER_DIR := $(abspath $(patsubst ~/%,$(HOME)/%,$(USER_DIR)))
 
 ################################################################
 # Build directories
