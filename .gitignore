@@ -7,7 +7,7 @@
 /mod
 #I use this as the linter output for VS code
 /fmod_linter
-/output*
+/**/output*
 
 #intel opt report
 *.optrpt
