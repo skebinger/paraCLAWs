@@ -24,6 +24,7 @@ The project expects a Fortran MPI toolchain, for example:
 - BLAS/LAPACK or MKL, depending on compiler configuration
 - `mpidcl` from https://github.com/skebinger/mpidcl
 - optional VTK libraries from https://github.com/szaghi/VTKFortran if the corresponding features are enabled
+- optional `figlet` to print a header to console (purely visual)
 
 The default `Makefile` configures the compiler via `FC`, sets `num_ranks` for MPI runs. The executable and input writer can also be installed to a user-defined directory such as `~/.local/bin` with `make install`.
 
