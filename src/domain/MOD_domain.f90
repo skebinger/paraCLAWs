@@ -189,12 +189,13 @@ module MOD_domain
 
     end interface
     interface
-        module subroutine update_rank_boundaries(decomposition,solution)
+        module subroutine update_rank_boundaries(decomposition,mesh,solution)
             use mpi_f08
             use mpidcl,only:exchange_halos,get_cartesian_comm,get_neighbouring_ranks,decomp_info
             use MOD_solver_parameters,only:num_equations,num_ghost,num_aux
 
             type(decomp_info), intent(in) :: decomposition
+            type(mesh_fields), intent(in) :: mesh
             type(solution_fields), intent(inout) :: solution
         end subroutine
     end interface

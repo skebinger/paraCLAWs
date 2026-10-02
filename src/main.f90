@@ -158,7 +158,7 @@ program paraCLAWs
 
     !force the boundary conditions on the fields to fill the ghost cells
     !at the start time
-    call update_rank_boundaries(decomposition,solution)
+    call update_rank_boundaries(decomposition,mesh,solution)
 
     !===========================================================
     ! Calculate post process quantities at the initial time
@@ -185,7 +185,7 @@ program paraCLAWs
 
     ! Execute the boundary conditions in advance to prepare the
     ! solver for input at t=t_init
-    call update_rank_boundaries(decomposition,solution)
+    call update_rank_boundaries(decomposition,mesh,solution)
     !===========================================================
     ! PERFORM THE MAIN LOOP
     !===========================================================
@@ -242,7 +242,7 @@ program paraCLAWs
         !===========================================================
         ! Do this here, so that the fields written for post-processing
         ! contain the correct domain boundary values
-        call update_rank_boundaries(decomposition,solution)
+        call update_rank_boundaries(decomposition,mesh,solution)
 
         !===========================================================
         ! STEP 4: ADVANCE THE TIME BY DT

@@ -10,9 +10,11 @@
 submodule(MOD_domain) SMOD_boundary_conditions
     implicit none
 
+    integer, parameter :: BC_USER=1, BC_ZERO_GRADIENT=2, BC_CONSTANT_GRADIENT=3
+
 contains
 
-    module subroutine update_rank_boundaries(decomposition,solution)
+    module subroutine update_rank_boundaries(decomposition,mesh,solution)
         !! Performs an update of all rank boundaries.
         !!
         !! First performs halo exchange for all internal boundaries and then applies
@@ -23,6 +25,7 @@ contains
         use MOD_solver_parameters,only:num_equations,num_ghost,num_aux
 
         type(decomp_info), intent(in) :: decomposition
+        type(mesh_fields), intent(in) :: mesh
         type(solution_fields), intent(inout) :: solution
 
         integer :: size, rank, ierr
@@ -48,21 +51,23 @@ contains
         !ranks now operate independently for most of the timestep update
         
         !treat the exterior boundaries
-        call apply_physical_boundaries(decomposition,nbr_left,nbr_right,nbr_bottom,nbr_top,solution)
+        call apply_physical_boundaries(decomposition,nbr_left,nbr_right,nbr_bottom,nbr_top,mesh,solution)
 
     end subroutine
 
-    subroutine apply_physical_boundaries(decomposition, left, right, bottom, top, solution)
+    subroutine apply_physical_boundaries(decomposition, left, right, bottom, top, mesh, solution)
         !! Apply physical boundary treatment on processes touching domain edges
         !!
         !! This subroutine checks if the current process has external (physical) boundaries
-        !! and applies boundary conditions on ghost cell layers. Actual BC logic is delegated.
+        !! and applies boundary conditions on ghost cell layers.
         use mpi_f08,only:MPI_PROC_NULL
         use MOD_solver_parameters,only:num_equations,num_ghost
         use mpidcl,only:decomp_info
         use MOD_user_data
+        use MOD_error_handling
         type(decomp_info), intent(in) :: decomposition
         integer, intent(in) :: left, right, bottom, top !! neighbouring ranks
+        type(mesh_fields), intent(in) :: mesh
         type(solution_fields), intent(inout) :: solution
 
         integer :: i, j, v
