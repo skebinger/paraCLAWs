@@ -30,6 +30,7 @@ TARGET := $(BIN_DIR)/$(PROGRAM)
 ################################################################
 # Source files (ORDER MATTERS FOR FORTRAN MODULES)
 ################################################################
+# Order is important due to module dependencies.
 
 BASE_SRCS = \
 $(BASE_DIR)/src/constant/MOD_index.f90 \
@@ -42,10 +43,10 @@ $(BASE_DIR)/src/utility/MOD_mathematical_functions.f90 \
 $(BASE_DIR)/src/solver/MOD_work_arrays.f90 \
 $(BASE_DIR)/src/user_subroutines/MOD_user_data.f90 \
 $(BASE_DIR)/src/time_control/MOD_time_control.f90 \
-$(BASE_DIR)/src/domain_structure/MOD_domain.f90 \
-$(BASE_DIR)/src/domain_structure/SMOD_domain_allocation.f90 \
-$(BASE_DIR)/src/domain_structure/SMOD_mesh_manipulation.f90 \
-$(BASE_DIR)/src/domain_structure/SMOD_boundary_conditions.f90 \
+$(BASE_DIR)/src/domain/MOD_domain.f90 \
+$(BASE_DIR)/src/domain/SMOD_domain_allocation.f90 \
+$(BASE_DIR)/src/domain/SMOD_mesh_manipulation.f90 \
+$(BASE_DIR)/src/domain/SMOD_boundary_conditions.f90 \
 $(BASE_DIR)/src/user_subroutines/MOD_user_subroutines.f90 \
 $(BASE_DIR)/src/user_subroutines/SMOD_user_post.f90 \
 $(BASE_DIR)/src/user_subroutines/SMOD_setup.f90 \
