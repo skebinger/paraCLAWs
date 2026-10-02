@@ -19,9 +19,10 @@ module MOD_IO
 contains
 
     subroutine read_solver_control(t_ctrl,mesh,solution)
+        !! Subroutine to read the solver control parameters from the control.in file.
+        use MOD_solver_parameters,only:set_solver_parameters
         use MOD_time_control,only:time_control
         use MOD_domain,only:mesh_fields,solution_fields
-        use MOD_solver_parameters,only:set_solver_parameters
 
         type(time_control), intent(inout) :: t_ctrl
         type(mesh_fields), intent(inout) :: mesh
@@ -51,55 +52,56 @@ contains
 
         if (filestat /= 0) then
             error stop "Error opening <control.in>. Please ensure the file exists and is in the correct location."
-        end if
+        else
+            ! read the general solver parameters to determine the array dimensions
+            read(1,*) num_equations
+            read(1,*) num_dimensions
+            read(1,*) num_ghost
+            read(1,*) num_aux
+            read(1,*) num_waves
 
-        ! read the general solver parameters
-        read(1,*) num_equations
-        read(1,*) num_dimensions
-        read(1,*) num_ghost
-        read(1,*) num_aux
-        read(1,*) num_waves
+            ! read the time data from the control file
+            read(1,*) t_start
+            read(1,*) t_final
+            read(1,*) number_of_snapshots
+            read(1,*) dt_initial
+            read(1,*) adaptive_timestepping
+            read(1,*) CFL_limit
+            read(1,*) dt_min
+            read(1,*) dt_max
+            read(1,*) dt_max_growth_ratio
+            read(1,*) dt_min_shrink_ratio
+            read(1,*) higher_order_flux_correction
+            read(1,*) use_limiter
+            read(1,*) limiter_method
 
-        ! read the time data from the control file
-        read(1,*) t_start
-        read(1,*) t_final
-        read(1,*) number_of_snapshots
-        read(1,*) dt_initial
-        read(1,*) adaptive_timestepping
-        read(1,*) CFL_limit
-        read(1,*) dt_min
-        read(1,*) dt_max
-        read(1,*) dt_max_growth_ratio
-        read(1,*) dt_min_shrink_ratio
-        read(1,*) higher_order_flux_correction
-        read(1,*) use_limiter
-        read(1,*) limiter_method
+            ! read the mesh data from the control file
+            read(1,*) m_xi
+            read(1,*) m_eta
+            read(1,*) xi_dimensions(1)
+            read(1,*) xi_dimensions(2)
+            read(1,*) eta_dimensions(1)
+            read(1,*) eta_dimensions(2)
 
-        ! read the mesh data from the control file
-        read(1,*) m_xi
-        read(1,*) m_eta
-        read(1,*) xi_dimensions(1)
-        read(1,*) xi_dimensions(2)
-        read(1,*) eta_dimensions(1)
-        read(1,*) eta_dimensions(2)
-
-        ! read the boundary conditions
-        read(1,*) bc_xi_lower
-        read(1,*) bc_xi_upper
-        read(1,*) bc_eta_lower
-        read(1,*) bc_eta_upper
+            ! read the boundary conditions
+            read(1,*) bc_xi_lower
+            read(1,*) bc_xi_upper
+            read(1,*) bc_eta_lower
+            read(1,*) bc_eta_upper
+        endif
 
         close(1)
 
-        !call the initialization subroutines
+        ! set the solver control parameters
         call set_solver_parameters(num_equations,num_waves,num_ghost,num_aux,higher_order_flux_correction,use_limiter,limiter_method)
 
         ! initialize the time control
         call t_ctrl%initialize(t_start, t_final, dt_initial, number_of_snapshots, CFL_limit, &
             dt_max, dt_min, dt_max_growth_ratio, dt_min_shrink_ratio, adaptive_timestepping)
 
-        ! initialize the base mesh
-        call mesh%setup_mesh_base(m_xi, m_eta, xi_dimensions, eta_dimensions)
+        ! initialize the base mesh type
+        call mesh%setup_mesh_base(m_xi, m_eta, bc_xi_lower, bc_xi_upper, bc_eta_lower, bc_eta_upper, xi_dimensions, eta_dimensions)
+
     end subroutine read_solver_control
 
     subroutine write_vtk_rank(info,mesh,solution,time)

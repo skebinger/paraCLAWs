@@ -18,6 +18,10 @@ module MOD_domain
         !! Base mesh information, independent of the actual solution.
         integer :: m_xi !! number of cells in xi direction (in computational space)
         integer :: m_eta !! number of cells in eta direction (in computational space)
+        integer :: bc_xi_low !! boundary condition type at the low xi boundary
+        integer :: bc_xi_high !! boundary condition type at the high xi boundary
+        integer :: bc_eta_low !! boundary condition type at the low eta boundary
+        integer :: bc_eta_high !! boundary condition type at the high eta boundary
         double precision :: xi_dimensions(2) !! xi dimensions of the domain (in computational space)
         double precision :: eta_dimensions(2) !! eta dimensions of the domain (in computational space)
 
@@ -199,14 +203,23 @@ contains
 
     !================================================================================================
 
-    subroutine setup_mesh_base(this,m_xi,m_eta,xi_dimensions,eta_dimensions)
+    subroutine setup_mesh_base(this,m_xi,m_eta,bc_xi_lower,bc_xi_upper,bc_eta_lower,bc_eta_upper,xi_dimensions,eta_dimensions)
         class(mesh_base), intent(inout) :: this
         integer, intent(in) :: m_xi,m_eta
+        integer, intent(in) :: bc_xi_lower,bc_xi_upper,bc_eta_lower,bc_eta_upper
         double precision, intent(in) :: xi_dimensions(2),eta_dimensions(2)
 
+        ! set mesh size
         this%m_xi=m_xi
         this%m_eta=m_eta
 
+        ! set boundary conditions
+        this%bc_xi_low=bc_xi_lower
+        this%bc_xi_high=bc_xi_upper
+        this%bc_eta_low=bc_eta_lower
+        this%bc_eta_high=bc_eta_upper
+
+        ! set domain dimensions in computational space
         this%xi_dimensions=xi_dimensions
         this%eta_dimensions=eta_dimensions
     end subroutine
