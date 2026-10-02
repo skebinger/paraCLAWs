@@ -43,21 +43,6 @@ def describe():
     return textwrap.dedent(
         """
         custom.in fields:
-          r_jet                      [r_jet]=m; jet radius
-          h_imp                      [h_imp]=m; impingement distance
-          Q_flow                     [Q_flow]=m3 s-1; volumetric flow
-          mu                         [mu]=Pa s; dynamic viscosity
-          rho                        [rho]=kg m-3; density
-          h_prefilm                  [h_prefilm]=m; prefilm thickness
-          uw_linear                  baseline uw linear
-          vw_linear                  baseline vw linear
-          profile                    1=quadratic, 2=quartic, 3=root, 4=exponential
-          asympt_fix_delta           True/False
-          limiter_tau                True/False
-          distort_jet_source         True/False
-          urad_alpha                 radial source parameter
-          k_damper                   damper constant
-          alpha                      limiter blending parameter
 
         control.in fields:
           number_of_equations        number of equations solved
