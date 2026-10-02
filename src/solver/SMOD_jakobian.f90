@@ -24,6 +24,7 @@ contains
         use MOD_mathematical_functions, only: integrate
         use MOD_work_arrays,only:work_arrays
         use mpidcl,only:decomp_info
+        use MOD_error_handling,only:abort_program
         integer, intent(in) :: ixy !! direction of sweep
         integer, intent(in) :: i,j
         type(mesh_fields), intent(in) :: mesh
@@ -32,39 +33,13 @@ contains
         type(decomp_info), intent(in) :: decomposition
         double precision :: jakobi(num_equations,num_equations)
 
-        double precision :: top(6)
-
-        integer:: k,l
-        !double precision :: psi = 0.d0
+        integer :: k,l
         integer :: rank,ierr
-
-        double precision :: h,qu,qv
-        double precision :: Ui,Vi,Uw,Vw
-        double precision :: deltaU,deltaV
-        double precision :: beta,F,G,dF,dG
-        double precision :: dA1dh,dA1dqu,dA1dqv
-        double precision :: dA2dh,dA2dqu,dA2dqv
-        double precision :: dA3dh,dA3dqu,dA3dqv
-        double precision :: dB1dh,dB1dqu,dB1dqv
-        double precision :: dB2dh,dB2dqu,dB2dqv
-        double precision :: dB3dh,dB3dqu,dB3dqv
-        integer :: region_ident
         !==========================================================
         ! START OF USER INPUT
         !==========================================================
 
-        !if(ixy==1)then
-        !    jakobi(1,:) = [0.d0, 1.d0, 0.d0]
-        !    jakobi(2,:) = [-vars(2,i,j)**2/vars(1,i,j)**2 + psi*vars(1,i,j), 2.d0*vars(2,i,j)/vars(1,i,j), 0.d0]
-        !    jakobi(3,:) = [-vars(2,i,j)*vars(3,i,j)/vars(1,i,j)**2, vars(3,i,j)/vars(1,i,j), vars(2,i,j)/vars(1,i,j)]
-        !else
-        !    !stop
-        !    jakobi(1,:) = [0.d0, 0.d0, 1.d0]
-        !    jakobi(2,:) = [-vars(2,i,j)*vars(3,i,j)/vars(1,i,j)**2, vars(3,i,j)/vars(1,i,j), vars(2,i,j)/vars(1,i,j)]
-        !    jakobi(3,:) = [-vars(3,i,j)**2/vars(1,i,j)**2 + psi*vars(1,i,j), 0.d0, 2.d0*vars(3,i,j)/vars(1,i,j)]
-        !end if
-
-        jakobi=0.d0
+        call abort_program(msg="getJakobi is not implemented yet. Please implement it in the submodule SMOD_jakobian",comm=MPI_COMM_WORLD)
 
         do k=1,num_equations
             do l=1,num_equations
