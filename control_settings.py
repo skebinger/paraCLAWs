@@ -89,20 +89,20 @@ class ControlSettings:
     # Domain settings
     ###################################################################################
     # Mesh resolution and domain dimensions
-    m_xi: int = 601  # number of cells in xi direction
-    m_eta: int = 601  # number of cells in eta direction
+    m_xi: int = 21  # number of cells in xi direction
+    m_eta: int = 21  # number of cells in eta direction
 
     # Size of the domain in xi and eta in the unit of choosing
-    xi_min: float = -15.0  # lower boundary of xi
-    xi_max: float = 15.0  # upper boundary of xi
-    eta_min: float = -25.0  # lower boundary of eta
-    eta_max: float = 25.0  # upper boundary of eta
+    xi_min: float = -1 # lower boundary of xi
+    xi_max: float = 1  # upper boundary of xi
+    eta_min: float = -1  # lower boundary of eta
+    eta_max: float = 1  # upper boundary of eta
 
     # boundary conditions
-    bc_xi_lower: int = 1
-    bc_xi_upper: int = 1
-    bc_eta_lower: int = 1
-    bc_eta_upper: int = 1
+    bc_xi_lower: int = 2
+    bc_xi_upper: int = 2
+    bc_eta_lower: int = 2
+    bc_eta_upper: int = 2
 
     ###################################################################################
     FIELD_ORDER = [

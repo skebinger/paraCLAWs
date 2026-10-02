@@ -46,10 +46,10 @@ contains
         ! = handle internal boundary conditions; SO FAR I IGNORE PERIODIC BOUNDARIES!!
         call exchange_halos(decomposition,solution%vars,num_equations,num_ghost,nbr_left,nbr_right,nbr_bottom,nbr_top,comm_cart)
         call exchange_halos(decomposition,solution%aux,num_aux,num_ghost,nbr_left,nbr_right,nbr_bottom,nbr_top,comm_cart)
-        
+
         !safe to proceed now without pause since all communications are finished and
         !ranks now operate independently for most of the timestep update
-        
+
         !treat the exterior boundaries
         call apply_physical_boundaries(decomposition,nbr_left,nbr_right,nbr_bottom,nbr_top,mesh,solution)
 
@@ -70,45 +70,121 @@ contains
         type(mesh_fields), intent(in) :: mesh
         type(solution_fields), intent(inout) :: solution
 
-        integer :: i, j, v
-        integer :: xi_start, xi_end, eta_start, eta_end
+        integer :: i, j, me
+        integer :: ilow, ihigh, jlow, jhigh
 
-        call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
+        integer :: i_reverse ! index to count in reverse direction
+        double precision :: width, delta_var
+
+        call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
         ! Left boundary (physical)
         if (left == MPI_PROC_NULL) then
-            do j = eta_start, eta_end
-                do i = xi_start - num_ghost, xi_start-1
-                    error stop "Left boundary condition not implemented yet!"
+            do j = jlow, jhigh
+                do i = ilow - num_ghost, ilow-1
+
+                    select case(mesh%bc_xi_low)
+                      case(BC_USER)
+                        ! Apply user-defined boundary condition
+                        call abort_program(msg="User-defined boundary condition at lower xi boundary not implemented yet!", comm=MPI_COMM_WORLD)
+
+                      case(BC_ZERO_GRADIENT)
+                        ! Apply zero gradient boundary condition
+                        do me = 1, num_equations
+                            solution%vars(me,i,j) = solution%vars(me,ilow,j)
+                        end do
+
+                      case(BC_CONSTANT_GRADIENT)
+                        ! Linearly extrapolate from the two nearest cells.
+                        call abort_program(msg="Constant gradient boundary condition not implemented yet!", comm=MPI_COMM_WORLD)
+
+                      case default
+                        call abort_program(msg="Left boundary condition not implemented yet!", comm=MPI_COMM_WORLD)
+                    end select
+
                 end do
             end do
         end if
 
         ! Right boundary (physical)
         if (right == MPI_PROC_NULL) then
-            do j = eta_start, eta_end
-                do i = xi_end + 1, xi_end + num_ghost
-                    do v = 1, num_equations
-                        error stop "Right boundary condition not implemented yet!"
-                    end do
+            do j = jlow, jhigh
+                do i = ihigh + 1, ihigh + num_ghost
+
+                    select case(mesh%bc_xi_low)
+                      case(BC_USER)
+                        ! Apply user-defined boundary condition
+                        call abort_program(msg="User-defined boundary condition at upper xi boundary not implemented yet!", comm=MPI_COMM_WORLD)
+
+                      case(BC_ZERO_GRADIENT)
+                        ! Apply zero gradient boundary condition
+                        do me = 1, num_equations
+                            solution%vars(me,i,j) = solution%vars(me,ihigh,j)
+                        end do
+
+                      case(BC_CONSTANT_GRADIENT)
+                        ! Linearly extrapolate from the two nearest cells.
+                        call abort_program(msg="Constant gradient boundary condition not implemented yet!", comm=MPI_COMM_WORLD)
+
+                      case default
+                        call abort_program(msg="Left boundary condition not implemented yet!", comm=MPI_COMM_WORLD)
+                    end select
                 end do
             end do
         end if
 
         ! Bottom boundary (physical)
         if (bottom == MPI_PROC_NULL) then
-            do j = eta_start - num_ghost, eta_start-1
-                do i = xi_start, xi_end
-                    error stop "Bottom boundary condition not implemented yet!"
+            do j = jlow - num_ghost, jlow-1
+                do i = ilow, ihigh
+
+                    select case(mesh%bc_xi_low)
+                      case(BC_USER)
+                        ! Apply user-defined boundary condition
+                        call abort_program(msg="User-defined boundary condition at lower eta boundary not implemented yet!", comm=MPI_COMM_WORLD)
+
+                      case(BC_ZERO_GRADIENT)
+                        ! Apply zero gradient boundary condition
+                        do me = 1, num_equations
+                            solution%vars(me,i,j) = solution%vars(me,i,jlow)
+                        end do
+
+                      case(BC_CONSTANT_GRADIENT)
+                        ! Linearly extrapolate from the two nearest cells.
+                        call abort_program(msg="Constant gradient boundary condition not implemented yet!", comm=MPI_COMM_WORLD)
+
+                      case default
+                        call abort_program(msg="Bottom boundary condition not implemented yet!", comm=MPI_COMM_WORLD)
+                    end select
+
                 end do
             end do
         end if
 
         ! Top boundary (physical)
         if (top == MPI_PROC_NULL) then
-            do j = eta_end + 1, eta_end + num_ghost
-                do i = xi_start, xi_end
-                    error stop "Top boundary condition not implemented yet!"
+            do j = jhigh + 1, jhigh + num_ghost
+                do i = ilow, ihigh
+
+                    select case(mesh%bc_xi_high)
+                      case(BC_USER)
+                        ! Apply user-defined boundary condition
+                        call abort_program(msg="User-defined boundary condition at upper xi boundary not implemented yet!", comm=MPI_COMM_WORLD)
+
+                      case(BC_ZERO_GRADIENT)
+                        ! Apply zero gradient boundary condition
+                        do me = 1, num_equations
+                            solution%vars(me,i,j) = solution%vars(me,i,jhigh)
+                        end do
+
+                      case(BC_CONSTANT_GRADIENT)
+                        ! Linearly extrapolate from the two nearest cells.
+                        call abort_program(msg="Constant gradient boundary condition not implemented yet!", comm=MPI_COMM_WORLD)
+
+                      case default
+                        call abort_program(msg="Top boundary condition not implemented yet!", comm=MPI_COMM_WORLD)
+                    end select
+
                 end do
             end do
         end if
