@@ -1,35 +1,92 @@
 # paraCLAWs
-parallel conservation law solver package
 
-# Temporary readme
-- linking requires the lz library: zlib and zlib-devel! (on fedora, search for equivalent packages on other OS)
+paraCLAWs is a parallel solver for hyperbolic systems of conservation laws. The code is built around a 2D finite-volume formulation, uses MPI for distributed-memory parallelism and OpenMP for threaded execution, and includes adaptive time stepping, boundary conditions, source terms, and higher-order correction machinery.
 
-## Building with local source overrides
+The core solver lives in `src/`, the shared build logic lives in `mk/`, and the generated input files are produced by the Python helpers in the project root.
 
-The Makefile can build the solver from a base source tree without copying every
-source file into the user's working directory. Set `BASE_DIR` inside the
-copied `Makefile` to the directory containing the distributed `src/` and `mk/`
-directories. The build discovers user `.f90` files anywhere under `USER_DIR`
-automatically, so users do not need to reproduce the base tree or edit the
-Makefile to register their sources.
+## Project layout
 
-The build constructs one complete source list from the base source list and
-all `.f90` files under `USER_DIR`. It matches declared Fortran modules and
-submodules: a local file that declares the same unit as a base source replaces
-that base source in the final list, while other local files are added. Thus a
-replacement may be kept flat in `USER_DIR` without reproducing the base
-directory structure or editing `USER_SRCS`:
+- `src/` – Fortran solver source files
+- `mk/` – shared Makefile rules for building the solver
+- `write_input.py` – generates solver input files from the Python settings modules
+- `control_settings.py` – default control parameters writing `control.in`
+- `custom_settings.py` – user/custom settings writing `custom.in`
+- `set_env.sh` – environment configuration for MPI/OpenMP runtime settings (useful for HPC clusters)
+- `Makefile` – project-level build entry points
 
-```text
-USER_DIR/
-  source_function.f90
+## Requirements
+
+The project expects a Fortran MPI toolchain, for example:
+
+- `mpiifx` (Intel oneAPI) or `mpifort` (GNU)
+- OpenMP support
+- MPI runtime and development libraries
+- BLAS/LAPACK or MKL, depending on compiler configuration
+- `mpidcl` from https://github.com/skebinger/mpidcl
+- optional VTK libraries from https://github.com/szaghi/VTKFortran if the corresponding features are enabled
+
+The default `Makefile` configures the compiler via `FC`, sets `num_ranks` for MPI runs. The executable and input writer can also be installed to a user-defined directory such as `~/.local/bin` with `make install`.
+
+## Quick start
+
+1. Edit the compiler selection in `Makefile` if needed:
+
+```make
+FC = mpiifx
+# or FC = mpifort
 ```
 
-If `source_function.f90` declares `SMOD_source_function`, it automatically
-replaces the base source that declares that submodule. The user source must
-implement the same Fortran interface expected by the base code. A source that
-does not replace a base unit is still included as an additional source.
+2. Generate the default input files:
 
-Generated objects, module files, and the executable are placed in
-`USER_DIR/build`, keeping the base solver directory free of
-case-specific build artifacts.
+```bash
+make input
+```
+
+This writes `control.in` and `custom.in` in the project root.
+
+3. Build the solver:
+
+```bash
+make all
+```
+
+Useful make targets are:
+
+```bash
+make help
+make run
+make mpirun
+make input
+make input_help
+make clean
+```
+
+## Running the solver
+
+The build output is placed under `build/bin/` and the executable is named `paraCLAWs` by default.
+
+For a local serial run:
+
+```bash
+source ./set_env.sh
+./build/bin/paraCLAWs
+```
+
+For a local parallel MPI run:
+
+```bash
+source ./set_env.sh
+mpirun --bind-to socket -np 12 ./build/bin/paraCLAWs
+```
+
+## User source overrides
+
+The build system supports a base source tree plus optional user-defined Fortran sources. `USER_DIR` can point at a separate working directory, and the generated source list combines the base solver files with any `.f90` files found there. If a user file declares the same Fortran module or submodule as a base source, it replaces that base source in the final build; otherwise it is added as an additional source.
+
+This is useful for custom equations, source terms, initial conditions, or boundary logic without copying the entire base solver tree into a user directory.
+
+## Notes
+
+- Output is written into `output/` during execution.
+- The project uses `control.in` and `custom.in` as the runtime input files for the solver configuration.
+- `write_input.py --describe` prints a user-friendly summary of the expected input fields.
