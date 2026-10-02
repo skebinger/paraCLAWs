@@ -36,7 +36,7 @@ contains
 
         integer :: ilow, ihigh, jlow, jhigh
 
-        !call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
+        call decomposition%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
 
         print *, "NOTHING DONE IN after_step: User must define any operations to be performed after each time step."
 
@@ -54,12 +54,9 @@ contains
         type(mesh_fields), intent(in) :: mesh
         type(solution_fields), intent(inout) :: solution
 
-        !integer :: i,j
-        !integer :: xi_start, xi_end, eta_start, eta_end
+        integer :: xi_start, xi_end, eta_start, eta_end
 
-        !call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
-
-        print *, "setup_auxiliary_quantities: User must define auxiliary quantities for the solution fields."
+        call decomposition%get_local_block_bounds(xi_start,xi_end,eta_start,eta_end)
 
     end subroutine
 
