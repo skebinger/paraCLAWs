@@ -13,9 +13,6 @@ module MOD_time_control
 
     implicit none
 
-    !private
-    !public :: time_control
-
     type :: time_control
         !! Object to manage all simulation time tracking, timestep adjustment,
         !! output/snapshot scheduling, and CFL constraints.
@@ -243,12 +240,6 @@ contains
         end if
         this%dt=dt_step
 
-        ! Track CFL values
-        !this%CFL_previous_timestep = this%CFL
-        !this%CFL_max_current_step = this%CFL
-
-        ! Reset CFL accumulator
-        !this%CFL = 0.d0
     end subroutine updateTime
 
     subroutine update_max_CFL(this, CFL_curr)
