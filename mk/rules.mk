@@ -41,6 +41,9 @@ $(BASE_DIR)/src/utility/MOD_utils.f90 \
 $(BASE_DIR)/src/utility/MOD_error_handling.f90 \
 $(BASE_DIR)/src/utility/MOD_look_up_table.f90 \
 $(BASE_DIR)/src/utility/MOD_mathematical_functions.f90 \
+$(BASE_DIR)/src/utility/SMOD_derivatives.f90 \
+$(BASE_DIR)/src/utility/SMOD_eigenvalue_problem.f90 \
+$(BASE_DIR)/src/utility/SMOD_matrix_operations.f90 \
 $(BASE_DIR)/src/solver/MOD_work_arrays.f90 \
 $(BASE_DIR)/src/user_subroutines/MOD_user_data.f90 \
 $(BASE_DIR)/src/time_control/MOD_time_control.f90 \
