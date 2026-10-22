@@ -65,6 +65,7 @@ contains
         use mpidcl,only:decomp_info
         use MOD_user_data
         use MOD_error_handling
+        use MOD_mathematical_functions
         type(decomp_info), intent(in) :: decomposition
         integer, intent(in) :: left, right, bottom, top !! neighbouring ranks
         type(mesh_fields), intent(in) :: mesh
@@ -95,8 +96,13 @@ contains
                         end do
 
                       case(BC_CONSTANT_GRADIENT)
-                        ! Linearly extrapolate from the two nearest cells.
-                        call abort_program(msg="Constant gradient boundary condition not implemented yet!", comm=MPI_COMM_WORLD)
+                        ! Linearly extrapolate from the two nearest cells in computational space. 
+                        do me = 1, num_equations
+                            solution%vars(me,i,j) = solution%vars(me,i+1,j) - &
+                                deriv_2p(mesh%computational_space%xi(i+1,j), mesh%computational_space%xi(i+2,j), &
+                                solution%vars(me,i+1,j), solution%vars(me,i+2,j)) * &
+                                (mesh%computational_space%xi(i+2,j) - mesh%computational_space%xi(i+1,j))
+                        end do
 
                       case default
                         call abort_program(msg="Left boundary condition not implemented yet!", comm=MPI_COMM_WORLD)
@@ -123,8 +129,13 @@ contains
                         end do
 
                       case(BC_CONSTANT_GRADIENT)
-                        ! Linearly extrapolate from the two nearest cells.
-                        call abort_program(msg="Constant gradient boundary condition not implemented yet!", comm=MPI_COMM_WORLD)
+                        ! Linearly extrapolate from the two nearest cells in computational space. 
+                        do me = 1, num_equations
+                            solution%vars(me,i,j) = solution%vars(me,i-1,j) + &
+                                deriv_2p(mesh%computational_space%xi(i-1,j), mesh%computational_space%xi(i-2,j), &
+                                solution%vars(me,i-1,j), solution%vars(me,i-2,j)) * &
+                                (mesh%computational_space%xi(i+1,j) - mesh%computational_space%xi(i,j))
+                        end do
 
                       case default
                         call abort_program(msg="Left boundary condition not implemented yet!", comm=MPI_COMM_WORLD)
@@ -150,8 +161,13 @@ contains
                         end do
 
                       case(BC_CONSTANT_GRADIENT)
-                        ! Linearly extrapolate from the two nearest cells.
-                        call abort_program(msg="Constant gradient boundary condition not implemented yet!", comm=MPI_COMM_WORLD)
+                        ! Linearly extrapolate from the two nearest cells in computational space. 
+                        do me = 1, num_equations
+                            solution%vars(me,i,j) = solution%vars(me,i,j+1) - &
+                                deriv_2p(mesh%computational_space%xi(i,j+1), mesh%computational_space%xi(i,j+2), &
+                                solution%vars(me,i,j+1), solution%vars(me,i,j+2)) * &
+                                (mesh%computational_space%xi(i,j+2) - mesh%computational_space%xi(i,j+1))
+                        end do
 
                       case default
                         call abort_program(msg="Bottom boundary condition not implemented yet!", comm=MPI_COMM_WORLD)
@@ -178,8 +194,13 @@ contains
                         end do
 
                       case(BC_CONSTANT_GRADIENT)
-                        ! Linearly extrapolate from the two nearest cells.
-                        call abort_program(msg="Constant gradient boundary condition not implemented yet!", comm=MPI_COMM_WORLD)
+                        ! Linearly extrapolate from the two nearest cells in computational space. 
+                        do me = 1, num_equations
+                            solution%vars(me,i,j) = solution%vars(me,i,j-1) + &
+                                deriv_2p(mesh%computational_space%xi(i,j-1), mesh%computational_space%xi(i,j-2), &
+                                solution%vars(me,i,j-1), solution%vars(me,i,j-2)) * &
+                                (mesh%computational_space%xi(i,j+1) - mesh%computational_space%xi(i,j))
+                        end do
 
                       case default
                         call abort_program(msg="Top boundary condition not implemented yet!", comm=MPI_COMM_WORLD)
