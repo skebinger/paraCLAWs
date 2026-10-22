@@ -96,12 +96,12 @@ contains
                         end do
 
                       case(BC_CONSTANT_GRADIENT)
-                        ! Linearly extrapolate from the two nearest cells in computational space. 
+                        ! Linearly extrapolate from the two nearest interior cells.
                         do me = 1, num_equations
-                            solution%vars(me,i,j) = solution%vars(me,i+1,j) - &
-                                deriv_2p(mesh%computational_space%xi(i+1,j), mesh%computational_space%xi(i+2,j), &
-                                solution%vars(me,i+1,j), solution%vars(me,i+2,j)) * &
-                                (mesh%computational_space%xi(i+2,j) - mesh%computational_space%xi(i+1,j))
+                            solution%vars(me,i,j) = solution%vars(me,ilow,j) + &
+                                deriv_2p(mesh%computational_space%xi(ilow,j), mesh%computational_space%xi(ilow+1,j), &
+                                solution%vars(me,ilow,j), solution%vars(me,ilow+1,j)) * &
+                                (mesh%computational_space%xi(i,j) - mesh%computational_space%xi(ilow,j))
                         end do
 
                       case default
@@ -117,7 +117,7 @@ contains
             do j = jlow, jhigh
                 do i = ihigh + 1, ihigh + num_ghost
 
-                    select case(mesh%bc_xi_low)
+                    select case(mesh%bc_xi_high)
                       case(BC_USER)
                         ! Apply user-defined boundary condition
                         call abort_program(msg="User-defined boundary condition at upper xi boundary not implemented yet!", comm=MPI_COMM_WORLD)
@@ -129,12 +129,12 @@ contains
                         end do
 
                       case(BC_CONSTANT_GRADIENT)
-                        ! Linearly extrapolate from the two nearest cells in computational space. 
+                        ! Linearly extrapolate from the two nearest interior cells.
                         do me = 1, num_equations
-                            solution%vars(me,i,j) = solution%vars(me,i-1,j) + &
-                                deriv_2p(mesh%computational_space%xi(i-1,j), mesh%computational_space%xi(i-2,j), &
-                                solution%vars(me,i-1,j), solution%vars(me,i-2,j)) * &
-                                (mesh%computational_space%xi(i+1,j) - mesh%computational_space%xi(i,j))
+                            solution%vars(me,i,j) = solution%vars(me,ihigh,j) + &
+                                deriv_2p(mesh%computational_space%xi(ihigh-1,j), mesh%computational_space%xi(ihigh,j), &
+                                solution%vars(me,ihigh-1,j), solution%vars(me,ihigh,j)) * &
+                                (mesh%computational_space%xi(i,j) - mesh%computational_space%xi(ihigh,j))
                         end do
 
                       case default
@@ -149,7 +149,7 @@ contains
             do j = jlow - num_ghost, jlow-1
                 do i = ilow, ihigh
 
-                    select case(mesh%bc_xi_low)
+                    select case(mesh%bc_eta_low)
                       case(BC_USER)
                         ! Apply user-defined boundary condition
                         call abort_program(msg="User-defined boundary condition at lower eta boundary not implemented yet!", comm=MPI_COMM_WORLD)
@@ -161,12 +161,12 @@ contains
                         end do
 
                       case(BC_CONSTANT_GRADIENT)
-                        ! Linearly extrapolate from the two nearest cells in computational space. 
+                        ! Linearly extrapolate from the two nearest interior cells.
                         do me = 1, num_equations
-                            solution%vars(me,i,j) = solution%vars(me,i,j+1) - &
-                                deriv_2p(mesh%computational_space%xi(i,j+1), mesh%computational_space%xi(i,j+2), &
-                                solution%vars(me,i,j+1), solution%vars(me,i,j+2)) * &
-                                (mesh%computational_space%xi(i,j+2) - mesh%computational_space%xi(i,j+1))
+                            solution%vars(me,i,j) = solution%vars(me,i,jlow) + &
+                                deriv_2p(mesh%computational_space%eta(i,jlow), mesh%computational_space%eta(i,jlow+1), &
+                                solution%vars(me,i,jlow), solution%vars(me,i,jlow+1)) * &
+                                (mesh%computational_space%eta(i,j) - mesh%computational_space%eta(i,jlow))
                         end do
 
                       case default
@@ -182,10 +182,10 @@ contains
             do j = jhigh + 1, jhigh + num_ghost
                 do i = ilow, ihigh
 
-                    select case(mesh%bc_xi_high)
+                    select case(mesh%bc_eta_high)
                       case(BC_USER)
                         ! Apply user-defined boundary condition
-                        call abort_program(msg="User-defined boundary condition at upper xi boundary not implemented yet!", comm=MPI_COMM_WORLD)
+                        call abort_program(msg="User-defined boundary condition at upper eta boundary not implemented yet!", comm=MPI_COMM_WORLD)
 
                       case(BC_ZERO_GRADIENT)
                         ! Apply zero gradient boundary condition
@@ -194,12 +194,12 @@ contains
                         end do
 
                       case(BC_CONSTANT_GRADIENT)
-                        ! Linearly extrapolate from the two nearest cells in computational space. 
+                        ! Linearly extrapolate from the two nearest interior cells.
                         do me = 1, num_equations
-                            solution%vars(me,i,j) = solution%vars(me,i,j-1) + &
-                                deriv_2p(mesh%computational_space%xi(i,j-1), mesh%computational_space%xi(i,j-2), &
-                                solution%vars(me,i,j-1), solution%vars(me,i,j-2)) * &
-                                (mesh%computational_space%xi(i,j+1) - mesh%computational_space%xi(i,j))
+                            solution%vars(me,i,j) = solution%vars(me,i,jhigh) + &
+                                deriv_2p(mesh%computational_space%eta(i,jhigh-1), mesh%computational_space%eta(i,jhigh), &
+                                solution%vars(me,i,jhigh-1), solution%vars(me,i,jhigh)) * &
+                                (mesh%computational_space%eta(i,j) - mesh%computational_space%eta(i,jhigh))
                         end do
 
                       case default
