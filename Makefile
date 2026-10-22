@@ -128,6 +128,9 @@ endif
 ifeq ($(strip $(FC)),mpiifx)
 
 FLFLAGS = -qopenmp
+ifeq ($(use_vtk),1)
+FLFLAGS += -ipo
+endif
 
 FCFLAGS = \
 $(MPI_DCL_MOD_intel) \

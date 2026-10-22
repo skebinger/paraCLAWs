@@ -36,11 +36,8 @@ contains
         double precision, intent(out) :: xp,yp
         double precision, intent(in) :: xi,eta
 
-        xp = xi
-        yp = eta
-
-        xp = xi*cos(eta)
-        yp = xi*sin(eta)
+        xp = 4*xi
+        yp = 2*eta
 
     end subroutine
 

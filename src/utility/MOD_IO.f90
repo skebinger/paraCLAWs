@@ -157,8 +157,8 @@ contains
         do j = jlow, jhigh
             do i = ilow, ihigh
                 k = k + 1
-                xpts(k) = mesh%x(i,j)
-                ypts(k) = mesh%y(i,j)
+                xpts(k) = mesh%physical_space%x(i,j)
+                ypts(k) = mesh%physical_space%y(i,j)
                 zpts(k) = 0.0_R8P
             end do
         end do
@@ -195,7 +195,7 @@ contains
             do j = jlow, jhigh
                 do i = ilow, ihigh
                     k = k + 1
-                    qfield(k) = solution%q(m,i,j)
+                    qfield(k) = solution%vars(m,i,j)
                 end do
             end do
             write(q_name, '(A,I0)') 'q', m

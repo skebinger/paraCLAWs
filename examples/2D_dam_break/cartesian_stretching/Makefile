@@ -15,7 +15,7 @@
 # Set BASE_DIR to the directory containing src/ and mk/. (propably the location where you cloned the paraCLAWs repository)
 BASE_DIR := ~/lib/git/paraCLAWs
 # Set USER_DIR to the directory containing the user's working tree. (might be the same as BASE_DIR or a different location where you want to build the code)
-USER_DIR := ~/lib/git/paraCLAWs/examples/2D_dam_break
+USER_DIR := ~/lib/git/paraCLAWs/examples/2D_dam_break/cartesian_stretching
 
 ################################################################
 # Install location
@@ -39,7 +39,7 @@ num_ranks = 12
 # Optional features
 ################################################################
 
-use_vtk = 0
+use_vtk = 1
 
 ################################################################
 # Libraries
@@ -128,6 +128,9 @@ endif
 ifeq ($(strip $(FC)),mpiifx)
 
 FLFLAGS = -qopenmp
+ifeq ($(use_vtk),1)
+FLFLAGS += -ipo
+endif
 
 FCFLAGS = \
 $(MPI_DCL_MOD_intel) \
