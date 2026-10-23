@@ -15,6 +15,10 @@ module MOD_IO
     implicit none
 
     private :: create_directory
+#ifdef USE_VTK
+    private :: pvd_times, write_pvd_collection
+    double precision, allocatable, save :: pvd_times(:)
+#endif
 
 contains
 
@@ -108,7 +112,7 @@ contains
         use mpi_f08
         use mpidcl,only:decomp_info
         use MOD_domain
-        use MOD_solver_parameters
+        use MOD_solver_parameters,only:num_equations,num_ghost
 #ifdef USE_VTK
         use vtk_fortran, only: vtk_file
         use penf,        only: I4P, R8P
@@ -123,6 +127,8 @@ contains
 
         integer :: rank,ierr
         integer :: ilow,ihigh,jlow,jhigh
+        integer :: vtk_ilow,vtk_ihigh,vtk_jlow,vtk_jhigh
+        integer :: nbr_left,nbr_right,nbr_bottom,nbr_top
         integer :: nx,ny,npts
         integer :: i,j,k,m
 
@@ -142,11 +148,24 @@ contains
         ! Get MPI rank and local mesh bounds
         call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
         call info%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
+        call info%get_neighbouring_ranks(left=nbr_left,right=nbr_right,bottom=nbr_bottom,top=nbr_top)
+
+        ! Include the lower-index neighbor's final point at the start of each piece.
+        vtk_ilow = ilow
+        vtk_ihigh = ihigh
+        vtk_jlow = jlow
+        vtk_jhigh = jhigh
+        if(nbr_left/=MPI_PROC_NULL) vtk_ilow = ilow - 1
+        if(nbr_bottom/=MPI_PROC_NULL) vtk_jlow = jlow - 1
+        if((vtk_ilow<ilow .or. vtk_jlow<jlow) .and. num_ghost<1) then
+            write(*,*) "Parallel VTK output requires at least one ghost layer."
+            call MPI_Abort(MPI_COMM_WORLD,1,ierr)
+        end if
 
         write(rank_str,'(I0)') rank
 
-        nx = ihigh - ilow + 1
-        ny = jhigh - jlow + 1
+        nx = vtk_ihigh - vtk_ilow + 1
+        ny = vtk_jhigh - vtk_jlow + 1
         npts = nx * ny
 
         allocate(xpts(npts), ypts(npts), zpts(npts))
@@ -154,8 +173,8 @@ contains
         ! ----------------------------------------------------------------------
         ! Flatten mesh coordinates (2D: z = 0)
         k = 0
-        do j = jlow, jhigh
-            do i = ilow, ihigh
+        do j = vtk_jlow, vtk_jhigh
+            do i = vtk_ilow, vtk_ihigh
                 k = k + 1
                 xpts(k) = mesh%physical_space%x(i,j)
                 ypts(k) = mesh%physical_space%y(i,j)
@@ -177,11 +196,11 @@ contains
         ! Initialize VTK file
         error = vtkobj%initialize(format='binary', filename=filename, &
             mesh_topology='StructuredGrid', &
-            nx1=ilow, nx2=ihigh, ny1=jlow, ny2=jhigh, nz1=1, nz2=1)
+            nx1=vtk_ilow, nx2=vtk_ihigh, ny1=vtk_jlow, ny2=vtk_jhigh, nz1=1, nz2=1)
         if (error /= 0) stop "VTK initialize failed"
 
         ! Write geometry
-        error = vtkobj%xml_writer%write_piece(nx1=ilow, nx2=ihigh, ny1=jlow, ny2=jhigh, nz1=1, nz2=1)
+        error = vtkobj%xml_writer%write_piece(nx1=vtk_ilow, nx2=vtk_ihigh, ny1=vtk_jlow, ny2=vtk_jhigh, nz1=1, nz2=1)
         error = vtkobj%xml_writer%write_geo(n=npts, x=xpts, y=ypts, z=zpts)
 
         ! ----------------------------------------------------------------------
@@ -192,8 +211,8 @@ contains
         do m = 1, num_equations
             allocate(qfield(npts))
             k = 0
-            do j = jlow, jhigh
-                do i = ilow, ihigh
+            do j = vtk_jlow, vtk_jhigh
+                do i = vtk_ilow, vtk_ihigh
                     k = k + 1
                     qfield(k) = solution%vars(m,i,j)
                 end do
@@ -217,6 +236,163 @@ contains
         deallocate(xpts, ypts, zpts)
 #endif
     end subroutine
+
+    subroutine write_pvts_rank(info,time)
+        use mpi_f08
+        use mpidcl,only:decomp_info
+        use MOD_solver_parameters,only:num_equations,num_ghost
+#ifdef USE_VTK
+        use vtk_fortran,only:pvtk_file
+        use penf,only:I4P
+#endif
+
+        type(decomp_info), intent(in) :: info
+        double precision, intent(in) :: time
+
+#ifdef USE_VTK
+        type(pvtk_file) :: pvts
+        integer :: rank,size,ierr,error
+        integer :: ilow,ihigh,jlow,jhigh
+        integer :: vtk_ilow,vtk_ihigh,vtk_jlow,vtk_jhigh
+        integer :: nbr_left,nbr_right,nbr_bottom,nbr_top
+        integer :: local_bounds(4)
+        integer, allocatable :: all_bounds(:,:)
+        integer :: global_ilow,global_ihigh,global_jlow,global_jhigh
+        integer :: part
+        character(len=40) :: timestamp_str,dirname,rank_str,q_name
+        character(len=128) :: source
+        character(len=200) :: filename
+
+        call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+        call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
+        call info%get_local_block_bounds(ilow,ihigh,jlow,jhigh)
+        call info%get_neighbouring_ranks(left=nbr_left,right=nbr_right,bottom=nbr_bottom,top=nbr_top)
+
+        vtk_ilow = ilow
+        vtk_ihigh = ihigh
+        vtk_jlow = jlow
+        vtk_jhigh = jhigh
+        if(nbr_left/=MPI_PROC_NULL) vtk_ilow = ilow - 1
+        if(nbr_bottom/=MPI_PROC_NULL) vtk_jlow = jlow - 1
+        if((vtk_ilow<ilow .or. vtk_jlow<jlow) .and. num_ghost<1) then
+            write(*,*) "Parallel VTK output requires at least one ghost layer."
+            call MPI_Abort(MPI_COMM_WORLD,1,ierr)
+        end if
+
+        local_bounds = [vtk_ilow,vtk_ihigh,vtk_jlow,vtk_jhigh]
+        allocate(all_bounds(4,size))
+
+        call MPI_Barrier(MPI_COMM_WORLD,ierr)
+        call MPI_Gather(local_bounds,4,MPI_INTEGER,all_bounds,4,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+
+        if(rank==0)then
+            global_ilow = minval(all_bounds(1,:))
+            global_ihigh = maxval(all_bounds(2,:))
+            global_jlow = minval(all_bounds(3,:))
+            global_jhigh = maxval(all_bounds(4,:))
+
+            write(timestamp_str,'(F20.10)') time
+            dirname = 'output/' // trim(adjustl(timestamp_str))
+            filename = trim(dirname) // '/solution.pvts'
+
+            error = pvts%initialize(filename=trim(filename),mesh_topology='PStructuredGrid',mesh_kind='Float64', &
+                nx1=global_ilow,nx2=global_ihigh,ny1=global_jlow,ny2=global_jhigh,nz1=1,nz2=1)
+            if(error/=0) call abort_pvts_write('Could not initialize parallel VTK file.',error)
+
+            error = pvts%xml_writer%write_dataarray(location='node',action='open')
+            if(error/=0) call abort_pvts_write('Could not open parallel VTK point data.',error)
+            do part=1,num_equations
+                write(q_name,'(A,I0)') 'q',part
+                error = pvts%xml_writer%write_parallel_dataarray(data_name=trim(q_name),data_type='Float64', &
+                    number_of_components=1_I4P)
+                if(error/=0) call abort_pvts_write('Could not declare parallel VTK data array.',error)
+            end do
+            error = pvts%xml_writer%write_dataarray(location='node',action='close')
+            if(error/=0) call abort_pvts_write('Could not close parallel VTK point data.',error)
+
+            do part=1,size
+                write(rank_str,'(I0)') part-1
+                source = 'rank_' // trim(rank_str) // '/solution_rank_' // trim(rank_str) // '.vts'
+                error = pvts%xml_writer%write_parallel_geo(source=trim(source), &
+                    nx1=all_bounds(1,part),nx2=all_bounds(2,part), &
+                    ny1=all_bounds(3,part),ny2=all_bounds(4,part),nz1=1,nz2=1)
+                if(error/=0) call abort_pvts_write('Could not add a VTK rank piece.',error)
+            end do
+
+            error = pvts%finalize()
+            if(error/=0) call abort_pvts_write('Could not finalize parallel VTK file.',error)
+
+            call write_pvd_collection(time,error)
+            if(error/=0) call abort_pvts_write('Could not update VTK time-series collection.',error)
+        end if
+
+        deallocate(all_bounds)
+#endif
+#ifdef USE_VTK
+    contains
+        subroutine abort_pvts_write(message,error_code)
+            character(len=*), intent(in) :: message
+            integer, intent(in) :: error_code
+            integer :: abort_error
+
+            write(*,*) trim(message), ' Error code: ', error_code
+            call MPI_Abort(MPI_COMM_WORLD,error_code,abort_error)
+        end subroutine abort_pvts_write
+#endif
+    end subroutine write_pvts_rank
+
+#ifdef USE_VTK
+    subroutine write_pvd_collection(time,error)
+        double precision, intent(in) :: time
+        integer, intent(out) :: error
+
+        double precision, allocatable :: updated_times(:)
+        integer :: count,unit,close_error,index
+        character(len=256) :: message
+        character(len=40) :: time_str,directory
+
+        error = 0
+        count = 0
+        if(allocated(pvd_times)) count = size(pvd_times)
+        if(count>0) then
+            if(pvd_times(count)==time) return
+        end if
+
+        allocate(updated_times(count+1),stat=error,errmsg=message)
+        if(error/=0) then
+            write(*,*) 'Could not allocate VTK time-series entries: ',trim(message)
+            return
+        end if
+        if(count>0) updated_times(1:count) = pvd_times
+        updated_times(count+1) = time
+        call move_alloc(updated_times,pvd_times)
+
+        open(newunit=unit,file='output/solution.pvd',status='replace',action='write', &
+            iostat=error,iomsg=message)
+        if(error/=0) then
+            write(*,*) 'Could not open output/solution.pvd: ',trim(message)
+            return
+        end if
+
+        write(unit,'(A)',iostat=error,iomsg=message) '<?xml version="1.0"?>'
+        if(error==0) write(unit,'(A)',iostat=error,iomsg=message) &
+            '<VTKFile type="Collection" version="1.0" byte_order="LittleEndian">'
+        if(error==0) write(unit,'(A)',iostat=error,iomsg=message) '  <Collection>'
+        do index=1,count+1
+            if(error/=0) exit
+            write(time_str,'(F20.10)') pvd_times(index)
+            directory = adjustl(time_str)
+            write(unit,'(A)',iostat=error,iomsg=message) &
+                '    <DataSet timestep="'//trim(directory)//'" group="" part="0" file="'// &
+                trim(directory)//'/solution.pvts"/>'
+        end do
+        if(error==0) write(unit,'(A)',iostat=error,iomsg=message) '  </Collection>'
+        if(error==0) write(unit,'(A)',iostat=error,iomsg=message) '</VTKFile>'
+        close(unit,iostat=close_error,iomsg=message)
+        if(error==0 .and. close_error/=0) error=close_error
+        if(error/=0) write(*,*) 'Could not write output/solution.pvd: ',trim(message)
+    end subroutine write_pvd_collection
+#endif
 
     subroutine writeData(info,time,solution)
         !! Writes the solution data (q, aux) to disk.
