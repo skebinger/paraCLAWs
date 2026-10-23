@@ -61,6 +61,7 @@ Useful make targets are:
 
 ```bash
 make help
+make dep
 make run
 make mpirun
 make input
@@ -97,3 +98,5 @@ This is useful for custom equations, source terms, initial conditions, or bounda
 - Output is written into `output/` during execution.
 - The project uses `control.in` and `custom.in` as the runtime input files for the solver configuration.
 - `write_input.py --describe` prints a user-friendly summary of the expected input fields.
+- `make dep` builds MPIDCL and also builds/tests VTKFortran when `use_vtk = 1` in the active Makefile.
+- When `use_vtk = 1`, `make dep` requires FoBiS.py; install it with `pip install FoBiS.py` if needed.

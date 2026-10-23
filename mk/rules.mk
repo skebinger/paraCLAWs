@@ -16,6 +16,38 @@
 override BASE_DIR := $(abspath $(patsubst ~/%,$(HOME)/%,$(BASE_DIR)))
 override USER_DIR := $(abspath $(patsubst ~/%,$(HOME)/%,$(USER_DIR)))
 
+MPIDCL_INSTALL_DIR := $(BASE_DIR)/external/mpidcl/install
+MPI_DCL_MOD := -I$(MPIDCL_INSTALL_DIR)/include
+MPI_DCL_LIB := -L$(MPIDCL_INSTALL_DIR)/lib64 -lmpidcl
+
+VTKFORTRAN_BUILD_DIR := $(BASE_DIR)/external/VTKFortran/build
+VTKFORTRAN_LIBS = \
+$(VTKFORTRAN_BUILD_DIR)/lib64/libVTKFortran.a \
+$(VTKFORTRAN_BUILD_DIR)/src/third_party/FoXy/lib64/libFoXy.a \
+$(VTKFORTRAN_BUILD_DIR)/src/third_party/StringiFor/lib64/libStringiFor.a \
+$(VTKFORTRAN_BUILD_DIR)/src/third_party/BeFoR64/lib64/libBeFoR64.a \
+$(VTKFORTRAN_BUILD_DIR)/src/third_party/PENF/lib64/libPENF.a \
+$(VTKFORTRAN_BUILD_DIR)/src/third_party/FACE/lib64/libFACE.a
+VTKFORTRAN_MODS = \
+-I$(VTKFORTRAN_BUILD_DIR)/modules \
+-I$(VTKFORTRAN_BUILD_DIR)/src/third_party/FoXy/modules \
+-I$(VTKFORTRAN_BUILD_DIR)/src/third_party/StringiFor/modules \
+-I$(VTKFORTRAN_BUILD_DIR)/src/third_party/BeFoR64/modules \
+-I$(VTKFORTRAN_BUILD_DIR)/src/third_party/PENF/modules \
+-I$(VTKFORTRAN_BUILD_DIR)/src/third_party/FACE/modules
+
+ifeq ($(use_vtk),1)
+VTKFortran_gf = $(VTKFORTRAN_LIBS)
+VTKFortran_intel = $(VTKFORTRAN_LIBS)
+VTKFortran_MOD_gf = $(VTKFORTRAN_MODS) -DUSE_VTK
+VTKFortran_MOD_intel = $(VTKFORTRAN_MODS) -DUSE_VTK
+else
+VTKFortran_gf =
+VTKFortran_intel =
+VTKFortran_MOD_gf =
+VTKFortran_MOD_intel =
+endif
+
 ################################################################
 # Build directories
 ################################################################
@@ -106,7 +138,10 @@ $(TARGET): $(OBJS)
 	@mkdir -p $(BIN_DIR)
 	$(FC) $(FLFLAGS) $(FDFLAGS) -o $@ $^ $(FLIBFLAGS)
 
-new: clean all
+new:
+	$(MAKE) clean
+	$(MAKE) dep
+	$(MAKE) all
 
 ################################################################
 # Compilation rules
@@ -132,6 +167,20 @@ directories:
 ################################################################
 # Utilities
 ################################################################
+
+.PHONY: dep
+dep:
+	@case "$(strip $(FC))" in \
+		mpifort) mpi_flavor=openmpi ;; \
+		mpiifx) mpi_flavor=intelmpi ;; \
+		*) echo "Unsupported Fortran compiler '$(FC)' (expected mpifort or mpiifx)"; exit 1 ;; \
+	esac; \
+	cd "$(BASE_DIR)/external/mpidcl" && \
+		./makeall.sh --type Release --shared OFF --mpi "$$mpi_flavor" \
+			--build-lib ON --build-tests OFF
+ifeq ($(use_vtk),1)
+	@bash "$(BASE_DIR)/external/build_vtkfortran.sh" "$(FC)"
+endif
 
 run: directories $(TARGET) input
 	@./set_env.sh && $(TARGET)
@@ -213,6 +262,7 @@ help:
 	@echo "Targets:"
 	@echo "  all: compiles and links the solver"
 	@echo "  new: cleans and rebuilds the solver"
+	@echo "  dep: builds mpidcl; also builds VTKFortran when use_vtk=1"
 	@echo "  run: compiles and runs the code (with checks for recompilation)"
 	@echo "  mpirun: compiles and runs the code with MPI (with checks for recompilation)"
 	@echo "  install: compiles and installs the executable to $(inst_path)"
@@ -226,6 +276,7 @@ help:
 .PHONY: \
 all \
 new \
+dep \
 clean \
 run \
 mpirun \
