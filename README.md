@@ -35,12 +35,6 @@ The default `Makefile` configures the compiler via `FC`, sets `num_ranks` for MP
 ```make
 FC = mpiifx
 # or FC = mpifort
-# Example: the mpidcl library
-MPI_DCL_LIB_gf = -L$(path/to/the/library) -lmpidcl
-MPI_DCL_MOD_gf = -I$(HOME)/lib/mpidcl_gnu/include
-# or for a intel compiled version
-MPI_DCL_LIB_intel = -L$(path/to/the/library) -lmpidcl
-MPI_DCL_MOD_intel = -I$(path/to/include)
 ```
 
 2. Generate the default input files:
@@ -53,6 +47,11 @@ This writes `control.in` and `custom.in` in the project root.
 
 3. Build the solver:
 
+If compiled for the first time or recompile solver and dependencies
+```bash
+make new
+```
+Only compile solver
 ```bash
 make all
 ```
