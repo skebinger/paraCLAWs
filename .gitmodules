@@ -1,0 +1,6 @@
+[submodule "external/mpidcl"]
+	path = external/mpidcl
+	url = https://github.com/skebinger/mpidcl.git
+[submodule "external/VTKFortran"]
+	path = external/VTKFortran
+	url = https://github.com/szaghi/VTKFortran.git

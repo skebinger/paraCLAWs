@@ -12,9 +12,9 @@ submodule(MOD_work_arrays) SMOD_initialize_work_arrays
 
 contains
     module subroutine initialize_work(work,decomposition)
-        use MOD_user_data
-        use MOD_user_subroutines
-        use MOD_mathematical_functions
+        !use MOD_user_data
+        !use MOD_user_subroutines
+        !use MOD_mathematical_functions
         use MOD_work_arrays,only:work_arrays
         use mpidcl,only:decomp_info
         use mpi_f08

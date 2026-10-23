@@ -35,12 +35,6 @@ The default `Makefile` configures the compiler via `FC`, sets `num_ranks` for MP
 ```make
 FC = mpiifx
 # or FC = mpifort
-# Example: the mpidcl library
-MPI_DCL_LIB_gf = -L$(path/to/the/library) -lmpidcl
-MPI_DCL_MOD_gf = -I$(HOME)/lib/mpidcl_gnu/include
-# or for a intel compiled version
-MPI_DCL_LIB_intel = -L$(path/to/the/library) -lmpidcl
-MPI_DCL_MOD_intel = -I$(path/to/include)
 ```
 
 2. Generate the default input files:
@@ -53,6 +47,11 @@ This writes `control.in` and `custom.in` in the project root.
 
 3. Build the solver:
 
+If compiled for the first time or recompile solver and dependencies
+```bash
+make new
+```
+Only compile solver
 ```bash
 make all
 ```
@@ -61,6 +60,7 @@ Useful make targets are:
 
 ```bash
 make help
+make dep
 make run
 make mpirun
 make input
@@ -97,3 +97,5 @@ This is useful for custom equations, source terms, initial conditions, or bounda
 - Output is written into `output/` during execution.
 - The project uses `control.in` and `custom.in` as the runtime input files for the solver configuration.
 - `write_input.py --describe` prints a user-friendly summary of the expected input fields.
+- `make dep` builds MPIDCL and also builds/tests VTKFortran when `use_vtk = 1` in the active Makefile.
+- When `use_vtk = 1`, `make dep` requires FoBiS.py; install it with `pip install FoBiS.py` if needed.

@@ -22,5 +22,8 @@ paraCLAWs
 __pycache__/
 *.pyc
 
-# the build directory
+#the build directory
 build/
+
+#documentation
+doc/

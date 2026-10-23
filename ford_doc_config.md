@@ -2,7 +2,7 @@
 project: hyperCLAW
 summary: Program for solving hyperbolic conservation laws on a structured multi-block mesh. 
 src_dir: ./
-output_dir: ../doc
+output_dir: ./doc
 project_github: https://github.com/cmacmackin/futility
 project_website: https://github.com
 author: Simon Kebinger

@@ -1,8 +1,7 @@
 {
   "mod_dirs": [
     "fmod_linter",
-    "${env:HOME}/lib/mpidcl_intel/include",
-    "${env:HOME}/lib/mpidcl_gnu/include"
+    "${env:HOME}/external/mpidcl/install/include"
   ],
   "incremental_sync": false
 }

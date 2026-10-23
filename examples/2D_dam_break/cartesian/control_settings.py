@@ -46,10 +46,10 @@ class ControlSettings:
     time_start: float = 0 # [time_start]=s
 
     # final simulation time;
-    time_final: float = 0.5 # [t_final]=s
+    time_final: float = 0.1 # [t_final]=s
 
     # number of snapshots to be written to disk (equal spaced)
-    number_of_snapshots: int = 5
+    number_of_snapshots: int = 10
 
     ###################################################################################
     # Time step control settings
@@ -99,10 +99,11 @@ class ControlSettings:
     eta_max: float = 1  # upper boundary of eta
 
     # boundary conditions
-    bc_xi_lower: int = 2
-    bc_xi_upper: int = 2
-    bc_eta_lower: int = 2
-    bc_eta_upper: int = 2
+    # [1=user defined, 2=zero gradient, 3=const. gradient]
+    bc_xi_lower: int = 3
+    bc_xi_upper: int = 3
+    bc_eta_lower: int = 3
+    bc_eta_upper: int = 3
 
     ###################################################################################
     FIELD_ORDER = [

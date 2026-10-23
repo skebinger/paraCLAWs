@@ -13,7 +13,7 @@ submodule (MOD_flux_calculation) SMOD_jakobian
 
 contains
 
-    module function getJakobi(ixy,i,j,mesh,solution,work,decomposition)result(jakobi)
+    module function getJakobi(ixy,i,j,mesh,solution,work,decomposition) result(jakobi)
         !! Returns the jakobian matrix for the state vars(i,j); w/ aux array
         use mpi_f08
         use MOD_solver_parameters,only:num_equations,psi=>grav
@@ -39,6 +39,9 @@ contains
         ! START OF USER INPUT
         !==========================================================
 
+        ! dumme set
+        jakobi = 0.d0
+
         call abort_program(msg="getJakobi is not implemented yet. Please implement it in the submodule SMOD_jakobian",comm=MPI_COMM_WORLD)
 
         do k=1,num_equations
@@ -53,7 +56,7 @@ contains
                     write(*,*) jakobi(1,:),1
                     write(*,*) jakobi(2,:),2
                     write(*,*) jakobi(3,:),3
-                    error stop
+                    call abort_program(msg="fatal error in computing the jakobian!",comm=MPI_COMM_WORLD)
                 end if
             end do
         end do
