@@ -26,7 +26,7 @@ The project expects a Fortran MPI toolchain, for example:
 - optional VTK libraries from https://github.com/szaghi/VTKFortran if the corresponding features are enabled
 - optional `figlet` to print a header to console (purely visual)
 
-The default `Makefile` configures the compiler via `FC`, sets `num_ranks` for MPI runs. The executable and input writer can also be installed to a user-defined directory such as `~/.local/bin` with `make install`.
+The default `Makefile` configures the compiler via `FC`, sets `num_ranks` for MPI runs. The executable and VTK input writer can also be installed to a user-defined directory such as `~/.local/bin` with `make install`.
 
 ## Quick start
 
@@ -88,9 +88,24 @@ mpirun --bind-to socket -np 12 ./build/bin/paraCLAWs
 
 ## User source overrides
 
-The build system supports a base source tree plus optional user-defined Fortran sources. `USER_DIR` can point at a separate working directory, and the generated source list combines the base solver files with any `.f90` files found there. If a user file declares the same Fortran module or submodule as a base source, it replaces that base source in the final build; otherwise it is added as an additional source.
+Keep the solver repository as the base source tree, and do your case-specific work in a separate directory. You only need to copy the Fortran files you intend to change (often files from `src/user_subroutines/`), along with any additional user source files. There is no need to copy the entire solver source tree.
 
-This is useful for custom equations, source terms, initial conditions, or boundary logic without copying the entire base solver tree into a user directory.
+For example, create a workspace and copy the project Makefile and the user hooks you want to customize:
+
+```bash
+mkdir -p ~/work/my_case
+cp Makefile ~/work/my_case/
+cp src/user_subroutines/SMOD_setup.f90 \
+   src/user_subroutines/SMOD_set_initial_conditions.f90 \
+   ~/work/my_case/
+cp write_input.py control_settings.py custom_settings.py \
+   ~/work/my_case/
+cp set_env.sh ~/work/my_case/
+```
+
+In the copied Makefile, set `BASE_DIR` to the paraCLAWs repository, then run make from the workspace. `USER_DIR` defaults to `$(CURDIR)`, so it does not need to be set separately when make is run there.
+
+The build scans `USER_DIR` for `.f90` files and combines them with the base solver sources. A user file that declares the same Fortran module or submodule as a base source replaces that source; otherwise, it is added to the build. Thus, copy only the hooks you need to customize, and leave the other solver sources in the base repository. The `examples/` directories demonstrate this layout.
 
 ## Notes
 
