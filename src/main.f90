@@ -178,6 +178,7 @@ program paraCLAWs
     call writeData(decomposition,t_ctrl%time,solution)
     !repeat writing as a vtk file
     call write_vtk_rank(decomposition,mesh,solution,t_ctrl%time)
+    call write_pvts_rank(decomposition,t_ctrl%time)
     !write decomposition info to disk
     call decomposition%write_decom_to_disk(MPI_COMM_WORLD)
     !write user data to disk
@@ -258,6 +259,7 @@ program paraCLAWs
             !=> write to disk
             call writeData(decomposition,t_ctrl%time,solution)
             call write_vtk_rank(decomposition,mesh,solution,t_ctrl%time)
+            call write_pvts_rank(decomposition,t_ctrl%time)
             !call write_postProcessing(current_time_intervals_element)
 
             if(rank==0) write(*,1) t_ctrl%time,t_ctrl%get_previous_dt(),t_ctrl%get_CFL(),&

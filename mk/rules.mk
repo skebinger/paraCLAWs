@@ -197,6 +197,8 @@ install: create_inst_path $(TARGET)
 	@cp $(TARGET) $(inst_path)
 	@echo "Installing the input writer to $(inst_path)"
 	@cp write_input.py $(inst_path)
+	@echo "Installing the ParaView launcher to $(inst_path)"
+	@install -m 755 "$(BASE_DIR)/clawview.sh" "$(inst_path)/clawview.sh"
 	@echo "======================================================"
 
 doc:
@@ -265,7 +267,7 @@ help:
 	@echo "  dep: builds mpidcl; also builds VTKFortran when use_vtk=1"
 	@echo "  run: compiles and runs the code (with checks for recompilation)"
 	@echo "  mpirun: compiles and runs the code with MPI (with checks for recompilation)"
-	@echo "  install: compiles and installs the executable to $(inst_path)"
+	@echo "  install: compiles and installs the executable and utilities to $(inst_path)"
 	@echo "  doc: generates documentation using Ford"
 	@echo "  input: generates a default input file using write_input.py"
 	@echo "  input_help: describes the input file format using write_input.py"

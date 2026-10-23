@@ -95,6 +95,7 @@ This is useful for custom equations, source terms, initial conditions, or bounda
 ## Notes
 
 - Output is written into `output/` during execution.
+- With `use_vtk = 1`, open `output/solution.pvd` in ParaView to browse the saved snapshots using its time controls. Each timestep's `.pvts` file references the individual rank `.vts` pieces.
 - The project uses `control.in` and `custom.in` as the runtime input files for the solver configuration.
 - `write_input.py --describe` prints a user-friendly summary of the expected input fields.
 - `make dep` builds MPIDCL and also builds/tests VTKFortran when `use_vtk = 1` in the active Makefile.

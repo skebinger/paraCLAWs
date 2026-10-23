@@ -65,7 +65,7 @@ class ControlSettings:
 
     # minimum and maximum allowed time step sizes for the adaptive time stepping
     min_allowed_dt: float = 1e-10 # [min_allowed_dt]=s
-    max_allowed_dt: float = 5e-5 # [max_allowed_dt]=s
+    max_allowed_dt: float = 1e-2 # [max_allowed_dt]=s
 
     # maximum allowed growth and shrinkage ratios for the adaptive time stepping
     dt_max_growth_ratio: float = 1.2 # maximum allowed ratio with which the time step width is allowed to grow
@@ -89,8 +89,8 @@ class ControlSettings:
     # Domain settings
     ###################################################################################
     # Mesh resolution and domain dimensions
-    m_xi: int = 21  # number of cells in xi direction
-    m_eta: int = 21  # number of cells in eta direction
+    m_xi: int = 51  # number of cells in xi direction
+    m_eta: int = 51  # number of cells in eta direction
 
     # Size of the domain in xi and eta in the unit of choosing
     xi_min: float = -1 # lower boundary of xi
