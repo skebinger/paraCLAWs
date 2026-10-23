@@ -17,7 +17,8 @@ contains
         !! This is thought to be a method, for setting the correct final computational mesh prior to calculating the quadrilateral
         !! mapping information if specifying the correct mesh bounds (lower and upper bounds) in the control.in file is not easily done.
         !! For example: You know it is a multiple of some quantity you calculate inside the user setup subroutine, but don't know its
-        !! value at compile time.
+        !! value at compile time. 
+        !! A typical issue would be that you dont know the value of a scaling variable for non-dimensionalisation at compile time.
         use MOD_solver_parameters,only:num_ghost
         use mpidcl,only:decomp_info
         use MOD_user_data

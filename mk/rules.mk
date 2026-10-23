@@ -50,7 +50,7 @@ $(BASE_DIR)/src/time_control/MOD_time_control.f90 \
 $(BASE_DIR)/src/domain/MOD_domain.f90 \
 $(BASE_DIR)/src/domain/SMOD_domain_allocation.f90 \
 $(BASE_DIR)/src/domain/SMOD_mesh_manipulation.f90 \
-$(BASE_DIR)/src/domain/SMOD_boundary_conditions.f90 \
+$(BASE_DIR)/src/user_subroutines/SMOD_boundary_conditions.f90 \
 $(BASE_DIR)/src/user_subroutines/MOD_user_subroutines.f90 \
 $(BASE_DIR)/src/solver/SMOD_initialize_work_arrays.f90 \
 $(BASE_DIR)/src/user_subroutines/SMOD_user_post.f90 \
