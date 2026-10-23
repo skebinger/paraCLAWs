@@ -34,7 +34,7 @@ export MKL_DYNAMIC=FALSE   # optional but recommended for MPI jobs
 
 # Number of OpenMP threads per MPI rank
 # Choose this so that: (MPI ranks × OMP_NUM_THREADS) ≈ total CPU cores
-export OMP_NUM_THREADS=20
+export OMP_NUM_THREADS=5
 
 # Disable dynamic adjustment of OpenMP threads
 # Prevents OpenMP from changing thread count at runtime,
